@@ -44,6 +44,7 @@ class Session {
 
 	private yabaiMap = 0;
 	private yabaiTry = 0;
+	private dekiru = Infinity;
 
 	private get user(): User {
 		return this.game.user1Id == this.account.id ? this.game.user2 : this.game.user1;
@@ -315,8 +316,13 @@ class Session {
 		// 探索
 		let scores;
 		try {
-			if (this.yabaiMap > 0 && ++this.yabaiTry % 10 != 0) {
-				throw new Error('Yabai kara tenuki');
+			// 実績的に無理そうだったら最大1手
+			if (cans.length > this.dekiru) {
+				console.log(`Tenuki: ${cans.length} >= ${this.dekiru}`);
+				if (maxDepth > 1) {
+					console.log(`Tenuki`);
+					maxDepth = 1;
+				}
 			}
 
 			// 指定の先読み数で探索(時間制限付き)
@@ -324,11 +330,12 @@ class Session {
 			console.log(`dive for ${cans.length}cans, maxDepth=${maxDepth}`)
 			scores = cans.map(p => this.goDive(p, maxDepth, diveStart, 60 * 1000));
 
-			this.yabaiMap = 0;
 		} catch (e) {
 			console.log(e);
-			this.yabaiMap = 1;
 
+			this.dekiru = cans.length;
+
+			// 最大1手でリトライ
 			if (maxDepth > 1) {
 				maxDepth = 1;
 				const diveStart = new Date().getTime();
