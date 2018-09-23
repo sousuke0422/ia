@@ -200,7 +200,13 @@ class Session {
 		this.botColor = this.game.user1Id == this.account.id && this.game.black == 1 || this.game.user2Id == this.account.id && this.game.black == 2;
 
 		if (this.botColor) {
-			this.think();
+			try {
+				this.think();
+			} catch (e) {
+				console.log('think error', e);
+				process.send({ type: 'surrendered' });
+				process.exit();
+			}
 		}
 	}
 
@@ -255,7 +261,13 @@ class Session {
 		this.o.put(msg.body.color, msg.body.pos);
 
 		if (msg.body.next === this.botColor) {
-			this.think();
+			try {
+				this.think();
+			} catch (e) {
+				console.log('think error', e);
+				process.send({ type: 'surrendered' });
+				process.exit();
+			}
 		}
 	}
 
@@ -298,7 +310,19 @@ class Session {
 		/**
 		 * αβ法での探索
 		 */
+		let dives = 0;
+		const diveStart = new Date().getTime();
+
 		const dive = (pos: number, alpha = -Infinity, beta = Infinity, depth = 0): number => {
+			// 制限チェック
+			if (++dives % 10000 === 0) {
+				const elapsed = new Date().getTime() - diveStart;
+				console.log(`dive: dives=${dives} elapsed=${elapsed}ms`);
+				if (elapsed > 120 * 1000) {
+					throw new Error(`Limit exceeded: dives=${dives} elapsed=${elapsed}ms`)
+				}
+			}
+
 			// 試し打ち
 			this.o.put(this.o.turn, pos);
 
@@ -403,6 +427,7 @@ class Session {
 		const pos = cans[scores.indexOf(Math.max(...scores))];
 
 		console.log('Thinked:', pos);
+		console.log('dives:', dives);
 		console.timeEnd('think');
 
 		setTimeout(() => {
