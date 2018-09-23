@@ -42,6 +42,9 @@ class Session {
 	 */
 	private startedNote: any = null;
 
+	private yabaiMap = 0;
+	private yabaiTry = 0;
+
 	private get user(): User {
 		return this.game.user1Id == this.account.id ? this.game.user2 : this.game.user1;
 	}
@@ -312,17 +315,27 @@ class Session {
 		// 探索
 		let scores;
 		try {
+			if (this.yabaiMap > 0 && ++this.yabaiTry % 10 != 0) {
+				throw new Error('Yabai kara tenuki');
+			}
+
 			// 指定の先読み数で探索(時間制限付き)
 			const diveStart = new Date().getTime();
 			console.log(`dive for ${cans.length}cans, maxDepth=${maxDepth}`)
-			scores = cans.map(p => this.goDive(p, maxDepth, diveStart, 30 * 1000));
+			scores = cans.map(p => this.goDive(p, maxDepth, diveStart, 60 * 1000));
+
+			this.yabaiMap = 0;
 		} catch (e) {
 			console.log(e);
+			this.yabaiMap = 1;
+
 			if (maxDepth > 1) {
 				maxDepth = 1;
 				const diveStart = new Date().getTime();
 				console.log(`retry dive for ${cans.length}cans, maxDepth=${maxDepth}`)
-				scores = cans.map(p => this.goDive(p, maxDepth, diveStart, 30 * 1000));
+				scores = cans.map(p => this.goDive(p, maxDepth, diveStart, 60 * 1000));
+			} else {
+				throw new Error('Muri');
 			}
 		}
 		const pos = cans[scores.indexOf(Math.max(...scores))];
@@ -348,7 +361,7 @@ class Session {
 			// 制限チェック
 			if (dives++ % 100000 === 0) {
 				const elapsed = new Date().getTime() - diveStart;
-				console.log(`dive processing dives=${dives}, elapsed total=${elapsed}ms`);
+				//console.log(`dive processing dives=${dives}, elapsed total=${elapsed}ms`);
 				if (elapsed > ms) {
 					throw new Error(`Limit exceeded: dives=${dives} elapsed total=${elapsed}ms`)
 				}
@@ -454,7 +467,7 @@ class Session {
 		};
 
 		const value = dive(pos);
-		console.log(`dive[pos=${pos}] end took ${dives} dives`);
+		//console.log(`dive[pos=${pos}] end took ${dives} dives`);
 		return value;
 	}
 
