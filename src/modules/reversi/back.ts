@@ -305,15 +305,26 @@ class Session {
 		console.time('think');
 
 		// 接待モードのときは、全力(5手先読みくらい)で負けるようにする
-		const maxDepth = this.isSettai ? 5 : this.strength;
+		let maxDepth = this.isSettai ? 5 : this.strength;
 
 		const cans = this.o.canPutSomewhere(this.botColor);
 
 		// 探索
-		const diveStart = new Date().getTime();
-		console.log(`dive for ${cans.length}cans`)
-		const scores = cans.map(p => this.goDive(p, maxDepth, diveStart));
-
+		let scores;
+		try {
+			// 指定の先読み数で探索(時間制限付き)
+			const diveStart = new Date().getTime();
+			console.log(`dive for ${cans.length}cans, maxDepth=${maxDepth}`)
+			scores = cans.map(p => this.goDive(p, maxDepth, diveStart, 30 * 1000));
+		} catch (e) {
+			console.log(e);
+			if (maxDepth > 1) {
+				maxDepth = 1;
+				const diveStart = new Date().getTime();
+				console.log(`retry dive for ${cans.length}cans, maxDepth=${maxDepth}`)
+				scores = cans.map(p => this.goDive(p, maxDepth, diveStart, 30 * 1000));
+			}
+		}
 		const pos = cans[scores.indexOf(Math.max(...scores))];
 
 		console.log('Thinked:', pos);
