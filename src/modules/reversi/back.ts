@@ -307,19 +307,39 @@ class Session {
 		// 接待モードのときは、全力(5手先読みくらい)で負けるようにする
 		const maxDepth = this.isSettai ? 5 : this.strength;
 
+		const cans = this.o.canPutSomewhere(this.botColor);
+
+		// 探索
+		const diveStart = new Date().getTime();
+		console.log(`dive for ${cans.length}cans`)
+		const scores = cans.map(p => this.goDive(p, maxDepth, diveStart));
+
+		const pos = cans[scores.indexOf(Math.max(...scores))];
+
+		console.log('Thinked:', pos);
+		console.timeEnd('think');
+
+		setTimeout(() => {
+			process.send({
+				type: 'put',
+				pos
+			});
+		}, 500);
+	}
+
+	private goDive = (pos: number, maxDepth: number, diveStart, ms: number = 60 * 1000): number => {
 		/**
 		 * αβ法での探索
 		 */
 		let dives = 0;
-		const diveStart = new Date().getTime();
 
 		const dive = (pos: number, alpha = -Infinity, beta = Infinity, depth = 0): number => {
 			// 制限チェック
-			if (++dives % 10000 === 0) {
+			if (dives++ % 100000 === 0) {
 				const elapsed = new Date().getTime() - diveStart;
-				console.log(`dive: dives=${dives} elapsed=${elapsed}ms`);
-				if (elapsed > 120 * 1000) {
-					throw new Error(`Limit exceeded: dives=${dives} elapsed=${elapsed}ms`)
+				console.log(`dive processing dives=${dives}, elapsed total=${elapsed}ms`);
+				if (elapsed > ms) {
+					throw new Error(`Limit exceeded: dives=${dives} elapsed total=${elapsed}ms`)
 				}
 			}
 
@@ -422,20 +442,9 @@ class Session {
 			}
 		};
 
-		const cans = this.o.canPutSomewhere(this.botColor);
-		const scores = cans.map(p => dive(p));
-		const pos = cans[scores.indexOf(Math.max(...scores))];
-
-		console.log('Thinked:', pos);
-		console.log('dives:', dives);
-		console.timeEnd('think');
-
-		setTimeout(() => {
-			process.send({
-				type: 'put',
-				pos
-			});
-		}, 500);
+		const value = dive(pos);
+		console.log(`dive[pos=${pos}] end took ${dives} dives`);
+		return value;
 	}
 
 	/**
