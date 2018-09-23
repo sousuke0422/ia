@@ -328,7 +328,7 @@ class Session {
 			// 指定の先読み数で探索(時間制限付き)
 			const diveStart = new Date().getTime();
 			console.log(`dive for ${cans.length}cans, maxDepth=${maxDepth}`)
-			scores = cans.map(p => this.goDive(p, maxDepth, diveStart, 60 * 1000));
+			scores = cans.map(p => this.goDive(p, maxDepth, diveStart, 30 * 1000));
 
 		} catch (e) {
 			console.log(e);
