@@ -112,10 +112,12 @@ export default class 藍 {
 		switch (msg.type) {
 			// メンションされたとき
 			case 'mention': {
-				if (msg.body.userId == this.account.id) return; // 自分は弾く
-				if (msg.body.text.startsWith('@' + this.account.username)) {
+
+				const regMention = new RegExp(`@${this.account.username}`);
+				if (regMention.test(msg.body.text)) {
 					this.onMention(new MessageLike(this, msg.body, false));
 				}
+
 				break;
 			}
 
