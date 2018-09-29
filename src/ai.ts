@@ -74,10 +74,12 @@ export default class 藍 {
 
 		this.connection.addEventListener('open', () => {
 			console.log('home stream opened');
+			this.onConnectionOpen();
 		});
 
 		this.connection.addEventListener('close', () => {
 			console.log('home stream closed');
+			this.onConnectionClose();
 			this.connection._shouldReconnect && this.connection._connect()
 		});
 
@@ -108,6 +110,18 @@ export default class 藍 {
 			this.onLocalNote(msg.body);
 		});
 		//#endregion
+	}
+
+	private onConnectionOpen = () => {
+		this.modules.filter(m => m.hasOwnProperty('onConnectionOpen')).forEach(m => {
+			return m.onConnectionOpen();
+		});
+	}
+
+	private onConnectionClose = () => {
+		this.modules.filter(m => m.hasOwnProperty('onConnectionClose')).forEach(m => {
+			return m.onConnectionClose();
+		});
 	}
 
 	private onMessage = (msg: any) => {

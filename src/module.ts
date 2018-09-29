@@ -7,6 +7,8 @@ export default interface IModule {
 	onMention?: (msg: MessageLike) => boolean | Result;
 	onLocalNote?: (note: any) => void;
 	onReplyThisModule?: (msg: MessageLike, data?: any) => void | Result;
+	onConnectionOpen?: () => void;
+	onConnectionClose?: () => void;
 }
 
 export type Result = {
