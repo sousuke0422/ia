@@ -80,7 +80,6 @@ export default class 藍 {
 		this.connection.addEventListener('close', () => {
 			console.log('home stream closed');
 			this.onConnectionClose();
-			this.connection._shouldReconnect && this.connection._connect()
 		});
 
 		this.connection.addEventListener('message', message => {
@@ -101,7 +100,6 @@ export default class 藍 {
 
 		this.localTimelineConnection.addEventListener('close', () => {
 			console.log('local-timeline stream closed');
-			this.localTimelineConnection._shouldReconnect && this.localTimelineConnection._connect()
 		});
 
 		this.localTimelineConnection.addEventListener('message', message => {

@@ -31,7 +31,6 @@ export default class ServerModule implements IModule {
 
 		this.connection.addEventListener('close', () => {
 			console.log('server-stats stream closed');
-			this.connection._shouldReconnect && this.connection._connect()
 		});
 
 		this.connection.addEventListener('message', message => {

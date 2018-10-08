@@ -32,7 +32,6 @@ export default class ReversiModule implements IModule {
 
 		this.reversiConnection.addEventListener('close', () => {
 			console.log('reversi stream closed');
-			this.reversiConnection._shouldReconnect && this.reversiConnection._connect()
 		});
 
 		this.reversiConnection.addEventListener('message', message => {
@@ -200,7 +199,6 @@ export default class ReversiModule implements IModule {
 
 		gw.addEventListener('close', () => {
 			console.log('reversi game stream closed');
-			gw._shouldReconnect && gw._connect()
 		});
 	}
 
