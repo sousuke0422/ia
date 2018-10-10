@@ -24,9 +24,10 @@ export default class VersionModule implements IModule {
 
 	public install = (ai: 藍) => {
 		this.ai = ai;
+		setInterval(this.versionCheck, 60 * 1000);
 	}
 
-	public onConnectionOpen = () => {
+	public versionCheck = () => {
 		// バージョンチェック
 		this.getVersion().then(fetched => {
 			console.log(`Version fetched: ${JSON.stringify(fetched)}`);
@@ -37,9 +38,7 @@ export default class VersionModule implements IModule {
 
 					console.log(`Version changed: ${v}`);
 
-					this.wait(30 * 1000).then(() => {
-						this.ai.post({ text: `バージョンが変わりました\n${v}` });
-					});
+					this.ai.post({ text: `バージョンが変わりました\n${v}` });
 				} else {
 					// 変更なし
 				}
