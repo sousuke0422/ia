@@ -62,7 +62,9 @@ export default class 藍 {
 		// メンションされたとき
 		mainStream.on('mention', data => {
 			if (data.userId == this.account.id) return; // 自分は弾く
-			if (data.text.startsWith('@' + this.account.username)) {
+
+			const regMention = new RegExp(`@${this.account.username}`);
+			if (regMention.test(data.text)) {
 				this.onMention(new MessageLike(this, data, false));
 			}
 		});
