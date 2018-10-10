@@ -124,6 +124,15 @@ export default class ReversiModule implements IModule {
 				gw.dispose();
 
 				this.onGameEnded(game);
+			}	else if (msg.type == 'surrendered') {
+				// 投了する
+				this.ai.api('games/reversi/games/surrender', {
+					gameId: game.id
+				});
+
+				gw.dispose();
+
+				this.onGameEnded(game);
 			}
 		});
 

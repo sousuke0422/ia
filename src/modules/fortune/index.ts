@@ -27,12 +27,16 @@ const items = [
 export default class FortuneModule implements IModule {
 	public readonly name = 'fortune';
 
-	public install = (ai: 藍) => { }
+	private ai: 藍;
+
+	public install = (ai: 藍) => {
+		this.ai = ai;
+	}
 
 	public onMention = (msg: MessageLike) => {
 		if (msg.includes(['占', 'うらな', '運勢', 'おみくじ'])) {
 			const date = new Date();
-			const seed = `${date.getFullYear()}/${date.getMonth()}/${date.getDay()}@${msg.userId}`;
+			const seed = `${date.getFullYear()}/${date.getMonth()}/${date.getDay()}@${msg.userId}@${this.ai.account.id}`;
 			const rng = seedrandom(seed);
 			const omikuji = omikujis[Math.floor(rng() * omikujis.length)];
 			const item = items[Math.floor(rng() * items.length)];

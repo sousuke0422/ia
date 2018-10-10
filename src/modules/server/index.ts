@@ -4,7 +4,6 @@ import IModule from '../../module';
 import serifs from '../../serifs';
 import config from '../../config';
 const ReconnectingWebSocket = require('reconnecting-websocket');
-
 export default class ServerModule implements IModule {
 	public readonly name = 'server';
 

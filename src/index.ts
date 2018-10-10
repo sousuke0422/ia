@@ -12,6 +12,7 @@ import WelcomeModule from './modules/welcome';
 import TimerModule from './modules/timer';
 import DiceModule from './modules/dice';
 import ServerModule from './modules/server';
+import VersionModule from './modules/version';
 
 import * as request from 'request-promise-native';
 import IModule from './module';
@@ -38,7 +39,8 @@ promiseRetry(retry => {
 		new CoreModule(),
 		new PingModule(),
 		new WelcomeModule(),
-		new ServerModule()
+		new ServerModule(),
+		new VersionModule()
 	];
 
 	if (config.keywordEnabled) modules.push(new KeywordModule());

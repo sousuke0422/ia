@@ -42,6 +42,10 @@ class Session {
 	 */
 	private startedNote: any = null;
 
+	private yabaiMap = 0;
+	private yabaiTry = 0;
+	private dekiru = Infinity;
+
 	private get user(): User {
 		return this.game.user1Id == this.account.id ? this.game.user2 : this.game.user1;
 	}
@@ -200,7 +204,13 @@ class Session {
 		this.botColor = this.game.user1Id == this.account.id && this.game.black == 1 || this.game.user2Id == this.account.id && this.game.black == 2;
 
 		if (this.botColor) {
-			this.think();
+			try {
+				this.think();
+			} catch (e) {
+				console.log('think error', e);
+				process.send({ type: 'surrendered' });
+				process.exit();
+			}
 		}
 	}
 
@@ -255,7 +265,13 @@ class Session {
 		this.o.put(msg.color, msg.pos);
 
 		if (msg.next === this.botColor) {
-			this.think();
+			try {
+				this.think();
+			} catch (e) {
+				console.log('think error', e);
+				process.send({ type: 'surrendered' });
+				process.exit();
+			}
 		}
 	}
 
@@ -293,12 +309,71 @@ class Session {
 		console.time('think');
 
 		// 接待モードのときは、全力(5手先読みくらい)で負けるようにする
-		const maxDepth = this.isSettai ? 5 : this.strength;
+		let maxDepth = this.isSettai ? 5 : this.strength;
 
+		const cans = this.o.canPutSomewhere(this.botColor);
+
+		// 探索
+		let scores;
+		try {
+			// 実績的に無理そうだったら最大1手
+			if (cans.length > this.dekiru) {
+				console.log(`Tenuki: ${cans.length} >= ${this.dekiru}`);
+				if (maxDepth > 1) {
+					console.log(`Tenuki`);
+					maxDepth = 1;
+				}
+			}
+
+			// 指定の先読み数で探索(時間制限付き)
+			const diveStart = new Date().getTime();
+			console.log(`dive for ${cans.length}cans, maxDepth=${maxDepth}`)
+			scores = cans.map(p => this.goDive(p, maxDepth, diveStart, 60 * 1000));
+
+		} catch (e) {
+			console.log(e);
+
+			this.dekiru = cans.length;
+
+			// 最大1手でリトライ
+			if (maxDepth > 1) {
+				maxDepth = 1;
+				const diveStart = new Date().getTime();
+				console.log(`retry dive for ${cans.length}cans, maxDepth=${maxDepth}`)
+				scores = cans.map(p => this.goDive(p, maxDepth, diveStart, 60 * 1000));
+			} else {
+				throw new Error('Muri');
+			}
+		}
+		const pos = cans[scores.indexOf(Math.max(...scores))];
+
+		console.log('Thinked:', pos);
+		console.timeEnd('think');
+
+		setTimeout(() => {
+			process.send({
+				type: 'put',
+				pos
+			});
+		}, 500);
+	}
+
+	private goDive = (pos: number, maxDepth: number, diveStart, ms: number = 60 * 1000): number => {
 		/**
 		 * αβ法での探索
 		 */
+		let dives = 0;
+
 		const dive = (pos: number, alpha = -Infinity, beta = Infinity, depth = 0): number => {
+			// 制限チェック
+			if (dives++ % 100000 === 0) {
+				const elapsed = new Date().getTime() - diveStart;
+				//console.log(`dive processing dives=${dives}, elapsed total=${elapsed}ms`);
+				if (elapsed > ms) {
+					throw new Error(`Limit exceeded: dives=${dives} elapsed total=${elapsed}ms`)
+				}
+			}
+
 			// 試し打ち
 			this.o.put(this.o.turn, pos);
 
@@ -398,19 +473,9 @@ class Session {
 			}
 		};
 
-		const cans = this.o.canPutSomewhere(this.botColor);
-		const scores = cans.map(p => dive(p));
-		const pos = cans[scores.indexOf(Math.max(...scores))];
-
-		console.log('Thinked:', pos);
-		console.timeEnd('think');
-
-		setTimeout(() => {
-			process.send({
-				type: 'put',
-				pos
-			});
-		}, 500);
+		const value = dive(pos);
+		//console.log(`dive[pos=${pos}] end took ${dives} dives`);
+		return value;
 	}
 
 	/**
