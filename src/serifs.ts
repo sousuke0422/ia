@@ -47,9 +47,9 @@ export default {
 		nadenade: {
 			normal: 'ひゃっ…！ びっくりしました',
 
-			love2: 'わわっ… 恥ずかしいです',
+			love2: ['わわっ… 恥ずかしいです', 'うぅ… 恥ずかしいです…'],
 
-			love3: 'ん… ありがとうございます♪',
+			love3: ['ん… ありがとうございます♪', 'わっ、なんだか落ち着きますね♪'],
 
 			hate1: '…っ！ やめてほしいです...',
 
@@ -260,5 +260,13 @@ export default {
 
 	server: {
 		cpu: 'サーバーの負荷が高そうです。大丈夫でしょうか...？'
-	}
+	},
 };
+
+export function getSerif(serif: string | string[]): string {
+	if (Array.isArray(serif)) {
+		return serif[Math.floor(Math.random() * serif.length)];
+	} else {
+		return serif;
+	}
+}

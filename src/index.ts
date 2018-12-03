@@ -13,6 +13,7 @@ import TimerModule from './modules/timer';
 import DiceModule from './modules/dice';
 import ServerModule from './modules/server';
 import VersionModule from './modules/version';
+import FollowModule from './modules/follow';
 
 import * as request from 'request-promise-native';
 import IModule from './module';
@@ -40,7 +41,8 @@ promiseRetry(retry => {
 		new PingModule(),
 		new WelcomeModule(),
 		new ServerModule(),
-		new VersionModule()
+		new VersionModule(),
+		new FollowModule(),
 	];
 
 	if (config.keywordEnabled) modules.push(new KeywordModule());
@@ -48,4 +50,6 @@ promiseRetry(retry => {
 	new 藍(account, modules);
 
 	console.log('--- ai started! ---');
+}).catch(e => {
+	console.error('failed to fetch account', e);
 });

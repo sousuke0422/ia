@@ -127,10 +127,12 @@ export default class 藍 {
 				});
 			} else {
 				// リアクションする
-				this.api('notes/reactions/create', {
-					noteId: msg.id,
-					reaction: reaction
-				});
+				if (reaction) {
+					this.api('notes/reactions/create', {
+						noteId: msg.id,
+						reaction: reaction
+					});
+				}
 			}
 		}, 1000);
 	}
