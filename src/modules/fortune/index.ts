@@ -5,6 +5,8 @@ import serifs from '../../serifs';
 import * as seedrandom from 'seedrandom';
 
 const omikujis = [
+	'メガ吉',
+	'超吉',
 	'大大吉',
 	'大吉',
 	'吉',
@@ -16,6 +18,7 @@ const omikujis = [
 ];
 
 const items = [
+	'爪切り', '耳かき',
 	'ドール', 'テディベア', 'ぬいぐるみ',
 	'焼きビーフン', 'ポップコーン', 'チキンラーメン', '缶チューハイ',
 	'コーンスープ', '醤油ラーメン',
