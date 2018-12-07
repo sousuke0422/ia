@@ -24,7 +24,7 @@ export default class VersionModule implements IModule {
 
 	public install = (ai: 藍) => {
 		this.ai = ai;
-		setInterval(this.versionCheck, 60 * 1000);
+		setInterval(this.versionCheck, 10 * 1000);
 	}
 
 	public versionCheck = () => {
@@ -33,12 +33,17 @@ export default class VersionModule implements IModule {
 			console.log(`Version fetched: ${JSON.stringify(fetched)}`);
 
 			if (this.latest != null && fetched != null) {
-				if ((this.latest.server !== fetched.server) || (this.latest.client !== fetched.client)) {
-					const v = `Server: ${this.latest.server} → ${fetched.server}\nClient: ${this.latest.client} → ${fetched.client}`
+				const serverChanged = this.latest.server !== fetched.server;
+				const clientChanged = this.latest.client !== fetched.client;
+
+				if (serverChanged || clientChanged) {
+					let v = '';
+					v += (serverChanged ? '**' : '') + `Server: ${this.latest.server} → ${fetched.server}\n` + (serverChanged ? '**' : '');
+					v += (clientChanged ? '**' : '') + `Clinet: ${this.latest.client} → ${fetched.client}\n` + (clientChanged ? '**' : '');
 
 					console.log(`Version changed: ${v}`);
 
-					this.ai.post({ text: `バージョンが変わりました\n${v}` });
+					this.ai.post({ text: `【バージョンが変わりました】\n${v}` });
 				} else {
 					// 変更なし
 				}
