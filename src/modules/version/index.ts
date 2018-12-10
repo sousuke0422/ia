@@ -24,7 +24,7 @@ export default class VersionModule implements IModule {
 
 	public install = (ai: 藍) => {
 		this.ai = ai;
-		setInterval(this.versionCheck, 10 * 1000);
+		setInterval(this.versionCheck, 60 * 1000);
 	}
 
 	public versionCheck = () => {
