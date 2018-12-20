@@ -63,7 +63,7 @@ export default class VersionModule implements IModule {
 		if (query == null) return false;
 
 		this.ai.api('meta').then(meta => {
-			msg.reply(`${this.mfmVersion(meta.version)} (Client: ${meta.clientVersion || '???'})みたいです。`)
+			msg.reply(`${this.mfmVersion(meta.version)} (Client: ${meta.clientVersion || '???'}) みたいです。`)
 		}).catch(() => {
 			msg.reply(`取得失敗しました`)
 		});
