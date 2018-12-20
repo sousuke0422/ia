@@ -24,6 +24,8 @@ export default class VersionModule implements IModule {
 
 	public install = (ai: 藍) => {
 		this.ai = ai;
+
+		this.versionCheck();
 		setInterval(this.versionCheck, 60 * 1000);
 	}
 
@@ -37,8 +39,12 @@ export default class VersionModule implements IModule {
 				const clientChanged = this.latest.client !== fetched.client;
 
 				if (serverChanged || clientChanged) {
+					const newServer = fetched.server.match(/^\d+\.\d+\.\d+$/)
+						? `[${fetched.server}](https://github.com/syuilo/misskey/releases/tag/${fetched.server})`
+						: fetched.server;
+
 					let v = '';
-					v += (serverChanged ? '**' : '') + `Server: ${this.latest.server} → ${fetched.server}\n` + (serverChanged ? '**' : '');
+					v += (serverChanged ? '**' : '') + `Server: ${this.latest.server} → ${newServer}\n` + (serverChanged ? '**' : '');
 					v += (clientChanged ? '**' : '') + `Clinet: ${this.latest.client} → ${fetched.client}\n` + (clientChanged ? '**' : '');
 
 					console.log(`Version changed: ${v}`);
@@ -50,7 +56,7 @@ export default class VersionModule implements IModule {
 			}
 
 			this.latest = fetched;
-		});
+		}).catch(e => console.warn(e));
 	}
 
 	public onMention = (msg: MessageLike) => {
