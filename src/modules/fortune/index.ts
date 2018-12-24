@@ -145,7 +145,7 @@ export default class FortuneModule implements IModule {
 	public onMention = (msg: MessageLike) => {
 		if (msg.includes(['占', 'うらな', '運勢', 'おみくじ'])) {
 			const date = new Date();
-			const seed = `${date.getFullYear()}/${date.getMonth()}/${date.getDay()}@${msg.userId}@${this.ai.account.id}`;
+			const seed = `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}@${msg.userId}@${this.ai.account.id}`;
 			const rng = seedrandom(seed);
 			const omikuji = omikujis[Math.floor(rng() * omikujis.length)];
 			const itemPrefix = Math.floor(rng() * 5) != 0 ? itemPrefixes[Math.floor(rng() * itemPrefixes.length)] : '';
