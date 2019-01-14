@@ -1,5 +1,5 @@
-import 藍 from '../../ai';
-import IModule from '../../module';
+import autobind from 'autobind-decorator';
+import Module from '../../module';
 import MessageLike from '../../message-like';
 //import serifs from '../../serifs';
 
@@ -17,16 +17,17 @@ interface Version {
 	client: string;
 }
 
-export default class VersionModule implements IModule {
+export default class VersionModule extends Module {
 	public readonly name = 'version';
-	private ai: 藍;
+
 	private latest?: Version;
 
-	public install = (ai: 藍) => {
-		this.ai = ai;
-
+	@autobind
+	public install() {
 		this.versionCheck();
 		setInterval(this.versionCheck, 60 * 1000);
+
+		return {};
 	}
 
 	public versionCheck = () => {

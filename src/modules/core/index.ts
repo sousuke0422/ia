@@ -1,30 +1,27 @@
-import 藍 from '../../ai';
-import IModule, { Result } from '../../module';
+import autobind from 'autobind-decorator';
+import { HandlerResult } from '../../ai';
+import Module from '../../module';
 import MessageLike from '../../message-like';
 import serifs, { getSerif } from '../../serifs';
-import Friend from '../../friend';
 import getDate from '../../utils/get-date';
-
-function zeroPadding(num: number, length: number): string {
-	return ('0000000000' + num).slice(-length);
-}
 
 const titles = ['さん', 'くん', '君', 'ちゃん', '様', '先生'];
 
 const invalidChars = ['@', '#', '*', ':', '(', '[', ' ', '　'];
 
-export default class CoreModule implements IModule {
+export default class CoreModule extends Module {
 	public readonly name = 'core';
-	private ai: 藍;
 
-	public install = (ai: 藍) => {
-		this.ai = ai;
-
-		this.crawleBirthday();
-		setInterval(this.crawleBirthday, 1000 * 60 * 3);
+	@autobind
+	public install() {
+		return {
+			onMention: this.onMention,
+			onContextReply: this.onContextReply
+		};
 	}
 
-	public onMention = (msg: MessageLike) => {
+	@autobind
+	private onMention(msg: MessageLike) {
 		if (!msg.text) return false;
 
 		return (
@@ -36,46 +33,14 @@ export default class CoreModule implements IModule {
 			this.hug(msg) ||
 			this.humu(msg) ||
 			this.batou(msg) ||
-			this.ponkotu(msg)
+			this.ponkotu(msg) ||
+			this.rmrf(msg) ||
+			this.shutdown(msg)
 		);
 	}
 
-	/**
-	 * 誕生日のユーザーがいないかチェック(いたら祝う)
-	 */
-	private crawleBirthday = () => {
-		const now = new Date();
-		const m = now.getMonth();
-		const d = now.getDate();
-		// Misskeyの誕生日は 2018-06-16 のような形式
-		const today = `${zeroPadding(m + 1, 2)}-${zeroPadding(d, 2)}`;
-
-		const birthFriends = this.ai.friends.find({
-			'user.profile.birthday': { '$regex': new RegExp('-' + today + '$') }
-		} as any);
-
-		birthFriends.forEach(f => {
-			const friend = new Friend(this.ai, { doc: f });
-
-			// 親愛度が3以上必要
-			if (friend.love < 3) return;
-
-			const data = friend.getPerModulesData(this);
-
-			if (data.lastBirthdayChecked == today) return;
-
-			data.lastBirthdayChecked = today;
-			friend.setPerModulesData(this, data);
-
-			const text = serifs.core.happyBirthday(friend.name);
-
-			this.ai.sendMessage(friend.userId, {
-				text: text
-			});
-		});
-	}
-
-	private setName = (msg: MessageLike): boolean => {
+	@autobind
+	private setName(msg: MessageLike): boolean  {
 		if (!msg.text) return false;
 		if (!msg.text.includes('って呼んで')) return false;
 		if (msg.text.startsWith('って呼んで')) return false;
@@ -107,7 +72,7 @@ export default class CoreModule implements IModule {
 			msg.reply(serifs.core.setNameOk(name));
 		} else {
 			msg.reply(serifs.core.san).then(reply => {
-				this.ai.subscribeReply(this, msg.userId, msg.isMessage, msg.isMessage ? msg.userId : reply.id, {
+				this.subscribeReply(msg.userId, msg.isMessage, msg.isMessage ? msg.userId : reply.id, {
 					name: name
 				});
 			});
@@ -116,7 +81,8 @@ export default class CoreModule implements IModule {
 		return true;
 	}
 
-	private greet = (msg: MessageLike): boolean => {
+	@autobind
+	private greet(msg: MessageLike): boolean {
 		if (msg.text == null) return false;
 
 		const incLove = () => {
@@ -184,7 +150,8 @@ export default class CoreModule implements IModule {
 		return false;
 	}
 
-	private nadenade = (msg: MessageLike): boolean => {
+	@autobind
+	private nadenade(msg: MessageLike): boolean {
 		if (!msg.includes(['なでなで'])) return false;
 
 		// メッセージのみ
@@ -218,7 +185,8 @@ export default class CoreModule implements IModule {
 		return true;
 	}
 
-	private kawaii = (msg: MessageLike): boolean => {
+	@autobind
+	private kawaii(msg: MessageLike): boolean {
 		if (!msg.includes(['かわいい', '可愛い'])) return false;
 
 		// メッセージのみ
@@ -232,7 +200,8 @@ export default class CoreModule implements IModule {
 		return true;
 	}
 
-	private suki = (msg: MessageLike): boolean => {
+	@autobind
+	private suki(msg: MessageLike): boolean {
 		if (!msg.or(['好き', 'すき'])) return false;
 
 		// メッセージのみ
@@ -246,7 +215,8 @@ export default class CoreModule implements IModule {
 		return true;
 	}
 
-	private hug = (msg: MessageLike): boolean => {
+	@autobind
+	private hug(msg: MessageLike): boolean {
 		if (!msg.or(['ぎゅ', 'むぎゅ', /^はぐ(し(て|よ|よう)?)?$/])) return false;
 
 		// メッセージのみ
@@ -279,7 +249,8 @@ export default class CoreModule implements IModule {
 		return true;
 	}
 
-	private humu = (msg: MessageLike): boolean => {
+	@autobind
+	private humu(msg: MessageLike): boolean {
 		if (!msg.includes(['踏んで'])) return false;
 
 		// メッセージのみ
@@ -293,7 +264,8 @@ export default class CoreModule implements IModule {
 		return true;
 	}
 
-	private batou = (msg: MessageLike): boolean => {
+	@autobind
+	private batou(msg: MessageLike): boolean {
 		if (!msg.includes(['罵倒して', '罵って'])) return false;
 
 		// メッセージのみ
@@ -307,7 +279,8 @@ export default class CoreModule implements IModule {
 		return true;
 	}
 
-	private ponkotu = (msg: MessageLike): boolean |Result => {
+	@autobind
+	private ponkotu(msg: MessageLike): boolean | HandlerResult {
 		if (!msg.includes(['ぽんこつ'])) return false;
 
 		msg.friend.decLove();
@@ -317,12 +290,35 @@ export default class CoreModule implements IModule {
 		};
 	}
 
-	public onReplyThisModule = (msg: MessageLike, data: any) => {
+	@autobind
+	private rmrf(msg: MessageLike): boolean | HandlerResult {
+		if (!msg.includes(['rm -rf'])) return false;
+
+		msg.friend.decLove();
+
+		return {
+			reaction: 'angry'
+		};
+	}
+
+	@autobind
+	private shutdown(msg: MessageLike): boolean | HandlerResult {
+		if (!msg.includes(['shutdown'])) return false;
+
+		msg.reply(serifs.core.shutdown);
+
+		return {
+			reaction: 'confused'
+		};
+	}
+
+	@autobind
+	private onContextReply(msg: MessageLike, data: any) {
 		if (msg.text == null) return;
 
 		const done = () => {
 			msg.reply(serifs.core.setNameOk(msg.friend.name));
-			this.ai.unsubscribeReply(this, msg.userId);
+			this.unsubscribeReply(msg.userId);
 		};
 
 		if (msg.text.includes('はい')) {
@@ -333,7 +329,7 @@ export default class CoreModule implements IModule {
 			done();
 		} else {
 			msg.reply(serifs.core.yesOrNo).then(reply => {
-				this.ai.subscribeReply(this, msg.userId, msg.isMessage, reply.id, data);
+				this.subscribeReply(msg.userId, msg.isMessage, reply.id, data);
 			});
 		}
 	}

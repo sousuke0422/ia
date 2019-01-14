@@ -42,8 +42,6 @@ export default {
 
 		requireMoreLove: 'もっと仲良くなったら考えてあげてもいいですよ？',
 
-		happyBirthday: name => name ? `お誕生日おめでとうございます、${name}🎉` : 'お誕生日おめでとうございます🎉',
-
 		nadenade: {
 			normal: 'ひゃっ…！ びっくりしました',
 
@@ -98,7 +96,9 @@ export default {
 			normal: '(じとー…)',
 
 			hate: '…頭大丈夫ですか？'
-		}
+		},
+
+		shutdown: '私まだ眠くないですよ...？',
 	},
 
 	keyword: {
@@ -109,6 +109,10 @@ export default {
 
 	dice: {
 		done: res => `${res} です！`
+	},
+
+	birthday: {
+		happyBirthday: name => name ? `お誕生日おめでとうございます、${name}🎉` : 'お誕生日おめでとうございます🎉',
 	},
 
 	/**
@@ -256,6 +260,13 @@ export default {
 		tooLong: '長すぎます…',
 
 		notify: (time, name) => name ? `${name}、${time}経ちましたよ！` : `${time}経ちましたよ！`
+	},
+
+	/**
+	 * バレンタイン
+	 */
+	valentine: {
+		chocolateForYou: name => name ? `${name}、その... チョコレート作ったのでよかったらどうぞ！🍫` : 'チョコレート作ったのでよかったらどうぞ！🍫',
 	},
 
 	server: {
