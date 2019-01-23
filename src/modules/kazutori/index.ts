@@ -49,8 +49,8 @@ export default class extends Module {
 				return true;
 			}
 
-			// 直近のゲームから1時間経ってない場合
-			if (Date.now() - recentGame.startedAt < 1000 * 60 * 60) {
+			// 直近のゲームから時間経ってない場合
+			if (Date.now() - recentGame.startedAt < 1000 * 60 * 5) {
 				msg.reply(serifs.kazutori.matakondo);
 				return true;
 			}
@@ -134,7 +134,7 @@ export default class extends Module {
 		this.log('Kazutori game finished');
 
 		// お流れ
-		if (game.votes.length <= 1) {
+		if (game.votes.length <= 0) {
 			this.ai.post({
 				text: serifs.kazutori.onagare,
 				renoteId: game.postId
@@ -144,7 +144,7 @@ export default class extends Module {
 		}
 
 		function acct(user: User): string {
-			return user.host ? `@${user.username}@${user.host}` : `@${user.username}`;
+			return user.host ? `:@${user.username}@${user.host}:` : `:@${user.username}:`;
 		}
 
 		let results: string[] = [];
