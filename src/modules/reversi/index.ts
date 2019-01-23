@@ -3,11 +3,11 @@ import autobind from 'autobind-decorator';
 import Module from '../../module';
 import serifs from '../../serifs';
 import config from '../../config';
-import MessageLike from '../../message-like';
+import Message from '../../message';
 import Friend from '../../friend';
 import getDate from '../../utils/get-date';
 
-export default class ReversiModule extends Module {
+export default class extends Module {
 	public readonly name = 'reversi';
 
 	/**
@@ -28,12 +28,12 @@ export default class ReversiModule extends Module {
 		this.reversiConnection.on('matched', msg => this.onReversiGameStart(msg));
 
 		return {
-			onMention: this.onMention
+			mentionHook: this.mentionHook
 		};
 	}
 
 	@autobind
-	private onMention(msg: MessageLike) {
+	private async mentionHook(msg: Message) {
 		if (msg.includes(['リバーシ', 'オセロ', 'reversi', 'othello'])) {
 			if (config.reversiEnabled) {
 				msg.reply(serifs.reversi.ok);

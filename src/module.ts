@@ -2,13 +2,12 @@ import autobind from 'autobind-decorator';
 import 藍, { InstallerResult } from './ai';
 
 export default abstract class Module {
-	public abstract name: string;
+	public abstract readonly name: string;
 
 	protected ai: 藍;
 
-	constructor(ai: 藍) {
+	public init(ai: 藍) {
 		this.ai = ai;
-		this.ai.modules.push(this);
 	}
 
 	public abstract install(): InstallerResult;
@@ -19,12 +18,12 @@ export default abstract class Module {
 	}
 
 	@autobind
-	public subscribeReply(key: string, isMessage: boolean, id: string, data?: any) {
-		this.ai.subscribeReply(this, key, isMessage, id, data);
+	protected subscribeReply(key: string, isDm: boolean, id: string, data?: any) {
+		this.ai.subscribeReply(this, key, isDm, id, data);
 	}
 
 	@autobind
-	public unsubscribeReply(key: string) {
+	protected unsubscribeReply(key: string) {
 		this.ai.unsubscribeReply(this, key);
 	}
 }

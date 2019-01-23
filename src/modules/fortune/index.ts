@@ -1,22 +1,22 @@
 import autobind from 'autobind-decorator';
 import Module from '../../module';
-import MessageLike from '../../message-like';
+import Message from '../../message';
 import serifs from '../../serifs';
 import * as seedrandom from 'seedrandom';
 import { blessing, itemPrefixes, items } from './vocabulary';
 
-export default class FortuneModule extends Module {
+export default class extends Module {
 	public readonly name = 'fortune';
 
 	@autobind
 	public install() {
 		return {
-			onMention: this.onMention
+			mentionHook: this.mentionHook
 		};
 	}
 
 	@autobind
-	private onMention(msg: MessageLike) {
+	private async mentionHook(msg: Message) {
 		if (msg.includes(['占', 'うらな', '運勢', 'おみくじ'])) {
 			const date = new Date();
 			const seed = `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}@${msg.userId}@${this.ai.account.id}`;

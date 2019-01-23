@@ -4,24 +4,27 @@ import autobind from 'autobind-decorator';
 import * as loki from 'lokijs';
 import * as request from 'request-promise-native';
 import chalk from 'chalk';
+const delay = require('timeout-as-promise');
+
 import config from './config';
 import Module from './module';
-import MessageLike from './message-like';
+import Message from './message';
 import { FriendDoc } from './friend';
 import { User } from './misskey/user';
 import getCollection from './utils/get-collection';
 import Stream from './stream';
+import log from './utils/log';
 
-type OnMentionHandler = (msg: MessageLike) => boolean | HandlerResult;
-type OnContextReplyHandler = (msg: MessageLike, data?: any) => void | HandlerResult;
+type MentionHook = (msg: Message) => Promise<boolean | HandlerResult>;
+type ContextHook = (msg: Message, data?: any) => Promise<void | HandlerResult>;
 
 export type HandlerResult = {
 	reaction: string;
 };
 
 export type InstallerResult = {
-	onMention?: OnMentionHandler;
-	onContextReply?: OnContextReplyHandler;
+	mentionHook?: MentionHook;
+	contextHook?: ContextHook;
 };
 
 /**
@@ -31,12 +34,12 @@ export default class 藍 {
 	public account: User;
 	public connection: Stream;
 	public modules: Module[] = [];
-	private onMentionHandlers: OnMentionHandler[] = [];
-	private onContextReplyHandlers: { [moduleName: string]: OnContextReplyHandler } = {};
+	private mentionHooks: MentionHook[] = [];
+	private contextHooks: { [moduleName: string]: ContextHook } = {};
 	public db: loki;
 
 	private contexts: loki.Collection<{
-		isMessage: boolean;
+		isDm: boolean;
 		noteId?: string;
 		userId?: string;
 		module: string;
@@ -46,8 +49,16 @@ export default class 藍 {
 
 	public friends: loki.Collection<FriendDoc>;
 
-	constructor(account: User, ready?: Function) {
+	/**
+	 * 藍インスタンスを生成します
+	 * @param account 藍として使うアカウント
+	 * @param modules モジュール。先頭のモジュールほど高優先度
+	 */
+	constructor(account: User, modules: Module[]) {
 		this.account = account;
+		this.modules = modules;
+
+		this.log('Lodaing the memory...');
 
 		this.db = new loki('memory.json', {
 			autoload: true,
@@ -55,9 +66,10 @@ export default class 藍 {
 			autosaveInterval: 1000,
 			autoloadCallback: err => {
 				if (err) {
-					this.log(chalk.red(`Failed to load DB: ${err}`));
+					this.log(chalk.red(`Failed to load the memory: ${err}`));
 				} else {
-					if (ready) ready();
+					this.log(chalk.green('The memory loaded successfully'));
+					this.run();
 				}
 			}
 		});
@@ -65,11 +77,11 @@ export default class 藍 {
 
 	@autobind
 	public log(msg: string) {
-		console.log(`[AiOS]: ${msg}`);
+		log(chalk`[{magenta AiOS}]: ${msg}`);
 	}
 
 	@autobind
-	public run() {
+	private run() {
 		//#region Init DB
 		this.contexts = getCollection(this.db, 'contexts', {
 			indices: ['key']
@@ -87,58 +99,79 @@ export default class 藍 {
 		const mainStream = this.connection.useSharedConnection('main');
 
 		// メンションされたとき
-		mainStream.on('mention', data => {
+		mainStream.on('mention', async data => {
 			if (data.userId == this.account.id) return; // 自分は弾く
-
 			const regMention = new RegExp(`@${this.account.username}`);
 			if (data.text && regMention.test(data.text)) {
-				this.onMention(new MessageLike(this, data, false));
+				// Misskeyのバグで投稿が非公開扱いになる
+				if (data.text == null) data = await this.api('notes/show', { noteId: data.id });
+				this.onReceiveMessage(new Message(this, data, false));
 			}
 		});
 
 		// 返信されたとき
-		mainStream.on('reply', data => {
+		mainStream.on('reply', async data => {
 			if (data.userId == this.account.id) return; // 自分は弾く
-			this.onMention(new MessageLike(this, data, false));
+			if (data.text && data.text.startsWith('@' + this.account.username)) return;
+			// Misskeyのバグで投稿が非公開扱いになる
+			if (data.text == null) data = await this.api('notes/show', { noteId: data.id });
+			this.onReceiveMessage(new Message(this, data, false));
 		});
 
 		// メッセージ
 		mainStream.on('messagingMessage', data => {
 			if (data.userId == this.account.id) return; // 自分は弾く
-			this.onMention(new MessageLike(this, data, true));
+			this.onReceiveMessage(new Message(this, data, true));
 		});
 		//#endregion
 
 		// Install modules
 		this.modules.forEach(m => {
 			this.log(`Installing ${chalk.cyan.italic(m.name)}\tmodule...`);
+			m.init(this);
 			const res = m.install();
 			if (res != null) {
-				if (res.onMention) this.onMentionHandlers.push(res.onMention);
-				if (res.onContextReply) this.onContextReplyHandlers[m.name] = res.onContextReply;
+				if (res.mentionHook) this.mentionHooks.push(res.mentionHook);
+				if (res.contextHook) this.contextHooks[m.name] = res.contextHook;
 			}
 		});
 
 		this.log(chalk.green.bold('Ai am now running!'));
 	}
 
+	/**
+	 * ユーザーから話しかけられたとき
+	 * (メンション、リプライ、トークのメッセージ)
+	 */
 	@autobind
-	private onMention(msg: MessageLike) {
-		this.log(`mention received: ${msg.id}`);
+	private async onReceiveMessage(msg: Message): Promise<void> {
+		this.log(chalk.gray(`<<< An message received: ${chalk.underline(msg.id)}`));
 
-		const context = !msg.isMessage && msg.replyId == null ? null : this.contexts.findOne(msg.isMessage ? {
-			isMessage: true,
+		// Ignore message if the user is a bot
+		// To avoid infinity reply loop.
+		if (msg.user.isBot) {
+			return;
+		}
+
+		const isNoContext = !msg.isDm && msg.replyId == null;
+
+		// Look up the context
+		const context = isNoContext ? null : this.contexts.findOne(msg.isDm ? {
+			isDm: true,
 			userId: msg.userId
 		} : {
-			isMessage: false,
+			isDm: false,
 			noteId: msg.replyId
 		});
 
 		let reaction = 'love';
 
+		//#region
+		// コンテキストがあればコンテキストフック呼び出し
+		// なければそれぞれのモジュールについてフックが引っかかるまで呼び出し
 		if (context != null) {
-			const handler = this.onContextReplyHandlers[context.module];
-			const res = handler(msg, context.data);
+			const handler = this.contextHooks[context.module];
+			const res = await handler(msg, context.data);
 
 			if (res != null && typeof res === 'object') {
 				reaction = res.reaction;
@@ -146,40 +179,47 @@ export default class 藍 {
 		} else {
 			let res: boolean | HandlerResult;
 
-			this.onMentionHandlers.some(handler => {
-				res = handler(msg);
-				return res === true || typeof res === 'object';
-			});
+			for (const handler of this.mentionHooks) {
+				res = await handler(msg);
+				if (res === true || typeof res === 'object') break;
+			}
 
 			if (res != null && typeof res === 'object') {
 				reaction = res.reaction;
 			}
 		}
+		//#endregion
 
-		setTimeout(() => {
-			if (msg.isMessage) {
-				// 既読にする
-				this.api('messaging/messages/read', {
-					messageId: msg.id,
+		await delay(1000);
+
+		if (msg.isDm) {
+			// 既読にする
+			this.api('messaging/messages/read', {
+				messageId: msg.id,
+			});
+		} else {
+			// リアクションする
+			if (reaction) {
+				this.api('notes/reactions/create', {
+					noteId: msg.id,
+					reaction: reaction
 				});
-			} else {
-				// リアクションする
-				if (reaction) {
-					this.api('notes/reactions/create', {
-						noteId: msg.id,
-						reaction: reaction
-					});
-				}
 			}
-		}, 1000);
+		}
 	}
 
+	/**
+	 * 投稿します
+	 */
 	@autobind
 	public async post(param: any) {
 		const res = await this.api('notes/create', param);
 		return res.createdNote;
 	}
 
+	/**
+	 * 指定ユーザーにトークメッセージを送信します
+	 */
 	@autobind
 	public sendMessage(userId: any, param: any) {
 		return this.api('messaging/messages/create', Object.assign({
@@ -187,6 +227,9 @@ export default class 藍 {
 		}, param));
 	}
 
+	/**
+	 * APIを呼び出します
+	 */
 	@autobind
 	public api(endpoint: string, param?: any) {
 		return request.post(`${config.apiUrl}/${endpoint}`, {
@@ -196,16 +239,24 @@ export default class 藍 {
 		});
 	};
 
+	/**
+	 * コンテキストを生成し、ユーザーからの返信を待ち受けます
+	 * @param module 待ち受けるモジュール名
+	 * @param key コンテキストを識別するためのキー
+	 * @param isDm トークメッセージ上のコンテキストかどうか
+	 * @param id トークメッセージ上のコンテキストならばトーク相手のID、そうでないなら待ち受ける投稿のID
+	 * @param data コンテキストに保存するオプションのデータ
+	 */
 	@autobind
-	public subscribeReply(module: Module, key: string, isMessage: boolean, id: string, data?: any) {
-		this.contexts.insertOne(isMessage ? {
-			isMessage: true,
+	public subscribeReply(module: Module, key: string, isDm: boolean, id: string, data?: any) {
+		this.contexts.insertOne(isDm ? {
+			isDm: true,
 			userId: id,
 			module: module.name,
 			key: key,
 			data: data
 		} : {
-			isMessage: false,
+			isDm: false,
 			noteId: id,
 			module: module.name,
 			key: key,
@@ -213,6 +264,11 @@ export default class 藍 {
 		});
 	}
 
+	/**
+	 * 返信の待ち受けを解除します
+	 * @param module 解除するモジュール名
+	 * @param key コンテキストを識別するためのキー
+	 */
 	@autobind
 	public unsubscribeReply(module: Module, key: string) {
 		this.contexts.findAndRemove({

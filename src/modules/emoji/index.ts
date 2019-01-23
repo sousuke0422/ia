@@ -1,6 +1,6 @@
 import autobind from 'autobind-decorator';
 import Module from '../../module';
-import MessageLike from '../../message-like';
+import Message from '../../message';
 import serifs from '../../serifs';
 
 const hands = [
@@ -126,18 +126,18 @@ const faces = [
 	'👽'
 ]
 
-export default class EmojiModule extends Module {
+export default class extends Module {
 	public readonly name = 'emoji';
 
 	@autobind
 	public install() {
 		return {
-			onMention: this.onMention
+			mentionHook: this.mentionHook
 		};
 	}
 
 	@autobind
-	private onMention(msg: MessageLike) {
+	private async mentionHook(msg: Message) {
 		if (msg.includes(['顔文字', '絵文字', 'emoji', '福笑い'])) {
 			const hand = hands[Math.floor(Math.random() * hands.length)];
 			const face = faces[Math.floor(Math.random() * faces.length)];

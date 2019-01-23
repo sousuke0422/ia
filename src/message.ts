@@ -1,14 +1,16 @@
+import autobind from 'autobind-decorator';
 import 藍 from './ai';
 import Friend from './friend';
 import { User } from './misskey/user';
 import includes from './utils/includes';
 import or from './utils/or';
+import chalk from 'chalk';
 const delay = require('timeout-as-promise');
 
-export default class MessageLike {
+export default class Message {
 	private ai: 藍;
 	private messageOrNote: any;
-	public isMessage: boolean;
+	public isDm: boolean;
 
 	public get id(): string {
 		return this.messageOrNote.id;
@@ -32,10 +34,10 @@ export default class MessageLike {
 
 	public friend: Friend;
 
-	constructor(ai: 藍, messageOrNote: any, isMessage: boolean) {
+	constructor(ai: 藍, messageOrNote: any, isDm: boolean) {
 		this.ai = ai;
 		this.messageOrNote = messageOrNote;
-		this.isMessage = isMessage;
+		this.isDm = isDm;
 
 		this.friend = new Friend(ai, { user: this.user });
 
@@ -47,14 +49,15 @@ export default class MessageLike {
 		});
 	}
 
-	public reply = async (text: string, cw?: string) => {
+	@autobind
+	public async reply(text: string, cw?: string, renote?: string) {
 		if (text == null) return;
 
-		this.ai.log(`sending reply of ${this.id} ...`);
+		this.ai.log(`>>> Sending reply to ${chalk.underline(this.id)}`);
 
 		await delay(2000);
 
-		if (this.isMessage) {
+		if (this.isDm) {
 			return await this.ai.sendMessage(this.messageOrNote.userId, {
 				text: text
 			});
@@ -62,16 +65,19 @@ export default class MessageLike {
 			return await this.ai.post({
 				replyId: this.messageOrNote.id,
 				text: text,
-				cw: cw
+				cw: cw,
+				renoteId: renote
 			});
 		}
 	}
 
-	public includes = (words: string[]): boolean => {
+	@autobind
+	public includes(words: string[]): boolean {
 		return includes(this.text, words);
 	}
 
-	public or = (words: (string | RegExp)[]): boolean => {
+	@autobind
+	public or(words: (string | RegExp)[]): boolean {
 		return or(this.text, words);
 	}
 }

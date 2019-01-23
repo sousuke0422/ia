@@ -1,20 +1,20 @@
 import autobind from 'autobind-decorator';
 import Module from '../../module';
-import MessageLike from '../../message-like';
+import Message from '../../message';
 import serifs from '../../serifs';
 
-export default class TimerModule extends Module {
+export default class extends Module {
 	public readonly name = 'timer';
 
 	@autobind
 	public install() {
 		return {
-			onMention: this.onMention
+			mentionHook: this.mentionHook
 		};
 	}
 
 	@autobind
-	private onMention(msg: MessageLike) {
+	private async mentionHook(msg: Message) {
 		const secondsQuery = (msg.text || '').match(/([0-9]+)秒/);
 		const minutesQuery = (msg.text || '').match(/([0-9]+)分/);
 		const hoursQuery = (msg.text || '').match(/([0-9]+)時間/);

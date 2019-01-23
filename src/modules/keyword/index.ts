@@ -13,7 +13,7 @@ function kanaToHira(str: string) {
 	});
 }
 
-export default class KeywordModule extends Module {
+export default class extends Module {
 	public readonly name = 'keyword';
 
 	private tokenizer: any;
@@ -24,6 +24,8 @@ export default class KeywordModule extends Module {
 
 	@autobind
 	public install() {
+		if (!config.keywordEnabled) return {};
+
 		//#region Init DB
 		this.learnedKeywords = getCollection(this.ai.db, '_keyword_learnedKeywords', {
 			indices: ['userId']

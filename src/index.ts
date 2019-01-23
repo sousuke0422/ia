@@ -1,5 +1,6 @@
 import 藍 from './ai';
 import config from './config';
+import _log from './utils/log';
 
 import CoreModule from './modules/core';
 import BirthdayModule from './modules/birthday';
@@ -8,6 +9,7 @@ import PingModule from './modules/ping';
 import EmojiModule from './modules/emoji';
 import FortuneModule from './modules/fortune';
 import GuessingGameModule from './modules/guessing-game';
+import KazutoriModule from './modules/kazutori';
 import KeywordModule from './modules/keyword';
 import WelcomeModule from './modules/welcome';
 import TimerModule from './modules/timer';
@@ -22,13 +24,13 @@ import * as request from 'request-promise-native';
 const promiseRetry = require('promise-retry');
 
 function log(msg: string): void {
-	console.log(`[Boot]: ${msg}`);
+	_log(`[Boot]: ${msg}`);
 }
 
 log(chalk.bold('Ai v1.0'));
 
 promiseRetry(retry => {
-	log(`Account fetching... >>> ${config.host}`);
+	log(`Account fetching... ${chalk.gray(config.host)}`);
 	return request.post(`${config.apiUrl}/i`, {
 		json: {
 			i: config.i
@@ -37,29 +39,29 @@ promiseRetry(retry => {
 }, {
 	retries: 3
 }).then(account => {
-	log(chalk.green(`Account fetched successfully: @${account.username}`));
+	const acct = `@${account.username}`;
+	log(chalk.green(`Account fetched successfully: ${chalk.underline(acct)}`));
 
 	log('Starting AiOS...');
 
-	const ai = new 藍(account);
-
-	new EmojiModule(ai);
-	new FortuneModule(ai);
-	new GuessingGameModule(ai);
-	new ReversiModule(ai);
-	new TimerModule(ai);
-	new DiceModule(ai);
-	new CoreModule(ai);
-	new PingModule(ai);
-	new WelcomeModule(ai);
-	new ServerModule(ai);
-	new VersionModule(ai);
-	new FollowModule(ai);
-	new BirthdayModule(ai);
-	new ValentineModule(ai);
-	if (config.keywordEnabled) new KeywordModule(ai);
-
-	ai.run();
+	new 藍(account, [
+		new EmojiModule(),
+		new FortuneModule(),
+		new GuessingGameModule(),
+		new KazutoriModule(),
+		new ReversiModule(),
+		new TimerModule(),
+		new DiceModule(),
+		new CoreModule(),
+		new PingModule(),
+		new WelcomeModule(),
+		new ServerModule(),
+		new FollowModule(),
+		new BirthdayModule(),
+		new ValentineModule(),
+		new KeywordModule(),
+		new VersionModule(),
+	]);
 }).catch(e => {
 	log(chalk.red('Failed to fetch the account'));
 });

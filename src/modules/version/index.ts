@@ -1,6 +1,6 @@
 import autobind from 'autobind-decorator';
 import Module from '../../module';
-import MessageLike from '../../message-like';
+import Message from '../../message';
 //import serifs from '../../serifs';
 
 /**
@@ -17,7 +17,7 @@ interface Version {
 	client: string;
 }
 
-export default class VersionModule extends Module {
+export default class extends Module {
 	public readonly name = 'version';
 
 	private latest?: Version;
@@ -27,7 +27,9 @@ export default class VersionModule extends Module {
 		this.versionCheck();
 		setInterval(this.versionCheck, 60 * 1000);
 
-		return {};
+		return {
+			mentionHook: this.mentionHook
+		};
 	}
 
 	public versionCheck = () => {
@@ -56,7 +58,8 @@ export default class VersionModule extends Module {
 		}).catch(e => console.warn(e));
 	}
 
-	public onMention = (msg: MessageLike) => {
+	@autobind
+	private async mentionHook(msg: Message) {
 		if (msg.text == null) return false;
 
 		const query = msg.text.match(/バージョン/);

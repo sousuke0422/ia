@@ -1,19 +1,19 @@
 import autobind from 'autobind-decorator';
 import Module from '../../module';
-import MessageLike from '../../message-like';
+import Message from '../../message';
 
-export default class FollowModule extends Module {
+export default class extends Module {
 	public readonly name = 'follow';
 
 	@autobind
 	public install() {
 		return {
-			onMention: this.onMention
+			mentionHook: this.mentionHook
 		};
 	}
 
 	@autobind
-	private onMention(msg: MessageLike) {
+	private async mentionHook(msg: Message) {
 		if (msg.text && msg.includes(['フォロー', 'フォロバ', 'follow me'])) {
 			if (!msg.user.isFollowing) {
 				this.ai.api('following/create', {
