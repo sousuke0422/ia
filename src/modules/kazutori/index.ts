@@ -71,6 +71,15 @@ export default class extends Module {
 
 		this.log('New kazutori game started');
 
+		const game = this.games.findOne({
+			isEnded: false
+		});
+
+		game.votes.push({
+			user: this.ai.account,
+			number: Math.floor(Math.random() * 100) + 1
+		});
+
 		return true;
 	}
 
