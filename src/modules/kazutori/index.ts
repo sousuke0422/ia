@@ -50,7 +50,7 @@ export default class extends Module {
 			}
 
 			// 直近のゲームから時間経ってない場合
-			if (Date.now() - recentGame.startedAt < 1000 * 60 * 5) {
+			if (Date.now() - recentGame.startedAt < 1000 * 60 * 30) {
 				msg.reply(serifs.kazutori.matakondo);
 				return true;
 			}
@@ -126,8 +126,8 @@ export default class extends Module {
 
 		if (game == null) return;
 
-		// ゲーム開始から3分以上経過していたら
-		if (Date.now() - game.startedAt >= 1000 * 60 * 3) {
+		// ゲーム開始から30分以上経過していたら
+		if (Date.now() - game.startedAt >= 1000 * 60 * 30) {
 			this.finish(game);
 		}
 	}
