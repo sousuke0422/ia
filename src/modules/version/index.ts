@@ -39,12 +39,10 @@ export default class extends Module {
 
 			if (this.latest != null && fetched != null) {
 				const serverChanged = this.latest.server !== fetched.server;
-				const clientChanged = this.latest.client !== fetched.client;
 
-				if (serverChanged || clientChanged) {
+				if (serverChanged) {
 					let v = '';
-					v += (serverChanged ? '**' : '') + `Server: ${this.latest.server} → ${this.mfmVersion(fetched.server)}\n` + (serverChanged ? '**' : '');
-					v += (clientChanged ? '**' : '') + `Clinet: ${this.latest.client} → ${fetched.client}\n` + (clientChanged ? '**' : '');
+					v += (serverChanged ? '**' : '') + `${this.latest.server} → ${this.mfmVersion(fetched.server)}\n` + (serverChanged ? '**' : '');
 
 					console.log(`Version changed: ${v}`);
 
@@ -67,7 +65,7 @@ export default class extends Module {
 		if (query == null) return false;
 
 		this.ai.api('meta').then(meta => {
-			msg.reply(`${this.mfmVersion(meta.version)} (Client: ${meta.clientVersion || '???'}) みたいです。`)
+			msg.reply(`${this.mfmVersion(meta.version)} みたいです。`)
 		}).catch(() => {
 			msg.reply(`取得失敗しました`)
 		});
@@ -91,7 +89,7 @@ export default class extends Module {
 		if (v == null) return v;
 		return v.match(/^\d+\.\d+\.\d+$/)
 		? `[${v}](https://github.com/syuilo/misskey/releases/tag/${v})`
-		: v.server;
+		: v;
 	}
 
 	private wait = (ms: number): Promise<void> => {
