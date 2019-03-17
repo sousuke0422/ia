@@ -34,6 +34,7 @@ export default class extends Module {
 			this.humu(msg) ||
 			this.batou(msg) ||
 			this.ponkotu(msg) ||
+			this.reaction(msg) ||
 			this.rmrf(msg) ||
 			this.shutdown(msg)
 		);
@@ -287,6 +288,15 @@ export default class extends Module {
 
 		return {
 			reaction: 'angry'
+		};
+	}
+
+	@autobind
+	private reaction(msg: Message): boolean | HandlerResult {
+		if (!msg.includes(['リアクション'])) return false;
+
+		return {
+			reaction: '-random'
 		};
 	}
 
