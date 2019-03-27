@@ -54,7 +54,7 @@ export default class extends Module {
 			}
 
 			// 直近のゲームから時間経ってない場合
-			if (Date.now() - recentGame.startedAt < 1000 * 60 * 30) {
+			if (Date.now() - recentGame.startedAt < 1000 * 60 * 5) {
 				msg.reply(serifs.kazutori.matakondo);
 				return true;
 			}
@@ -101,6 +101,9 @@ export default class extends Module {
 		if (game.votes.some(x => x.user.id == msg.userId)) return {
 			reaction: 'confused'
 		};
+
+		const text = msg.extractedText;
+		this.log(`Extracted: '${text}'`);
 
 		const match = msg.extractedText.match(/[0-9]+/);
 		if (match == null) return {
@@ -149,8 +152,8 @@ export default class extends Module {
 
 		if (game == null) return;
 
-		// ゲーム開始から30分以上経過していたら
-		if (Date.now() - game.startedAt >= 1000 * 60 * 30) {
+		// ゲーム開始から5分以上経過していたら
+		if (Date.now() - game.startedAt >= 1000 * 60 * 5) {
 			this.finish(game);
 		}
 	}
