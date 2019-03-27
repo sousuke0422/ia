@@ -24,8 +24,18 @@ export default {
 
 		goodNight: name => name ? `おやすみなさい、${name}！` : 'おやすみなさい！',
 
+		omedeto: name => name ? `ありがとうございます、${name}♪` : 'ありがとうございます♪',
+
 		okaeri: {
-			love: name => name ? `おかえりなさい、${name}♪` : 'おかえりなさい♪',
+			love: name => name ? [
+				`おかえりなさい、${name}♪`,
+				`おかえりなさいませっ、${name}っ。`
+			] : [
+				'おかえりなさい♪',
+				'おかえりなさいませっ、ご主人様っ。'
+			],
+
+			love2: name => name ? `おかえりなさいませ♡♡♡${name}っっ♡♡♡♡♡` : 'おかえりなさいませ♡♡♡ご主人様っっ♡♡♡♡♡',
 
 			normal: name => name ? `おかえりなさい、${name}！` : 'おかえりなさい！',
 		},
@@ -45,9 +55,9 @@ export default {
 		nadenade: {
 			normal: 'ひゃっ…！ びっくりしました',
 
-			love2: ['わわっ… 恥ずかしいです', 'うぅ… 恥ずかしいです…'],
+			love2: ['わわっ… 恥ずかしいです', 'あうぅ… 恥ずかしいです…'],
 
-			love3: ['ん… ありがとうございます♪', 'わっ、なんだか落ち着きますね♪'],
+			love3: ['んぅ… ありがとうございます♪', 'わっ、なんだか落ち着きますね♪', 'くぅんっ… 安心します…', '眠くなってきました…'],
 
 			hate1: '…っ！ やめてほしいです...',
 
@@ -59,9 +69,9 @@ export default {
 		},
 
 		kawaii: {
-			normal: 'ありがとうございます♪',
+			normal: ['ありがとうございます♪', '照れちゃいます...'],
 
-			love: '嬉しいです♪',
+			love: ['嬉しいです♪', '照れちゃいます...'],
 
 			hate: '…ありがとうございます'
 		},
@@ -69,7 +79,7 @@ export default {
 		suki: {
 			normal: 'えっ… ありがとうございます…♪',
 
-			love: name => `私もその… ${name}のこと好きですよ♪`,
+			love: name => `私もその… ${name}のこと好きですよ！`,
 
 			hate: null
 		},
@@ -96,6 +106,16 @@ export default {
 			normal: '(じとー…)',
 
 			hate: '…頭大丈夫ですか？'
+		},
+
+		itai: name => name ? `${name}、大丈夫ですか…？ いたいのいたいの飛んでけっ！` : '大丈夫ですか…？ いたいのいたいの飛んでけっ！',
+
+		ote: {
+			normal: 'くぅん... 私わんちゃんじゃないですよ...？',
+
+			love1: 'わん！',
+
+			love2: 'わんわん♪',
 		},
 
 		shutdown: '私まだ眠くないですよ...？',
@@ -293,10 +313,10 @@ export default {
 	},
 };
 
-export function getSerif(serif: string | string[]): string {
-	if (Array.isArray(serif)) {
-		return serif[Math.floor(Math.random() * serif.length)];
+export function getSerif(variant: string | string[]): string {
+	if (Array.isArray(variant)) {
+		return variant[Math.floor(Math.random() * variant.length)];
 	} else {
-		return serif;
+		return variant;
 	}
 }

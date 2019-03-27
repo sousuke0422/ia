@@ -1,3 +1,5 @@
+// AiOS bootstrapper
+
 import 藍 from './ai';
 import config from './config';
 import _log from './utils/log';
@@ -23,6 +25,11 @@ import chalk from 'chalk';
 import * as request from 'request-promise-native';
 const promiseRetry = require('promise-retry');
 
+console.log('   __    ____  _____  ___ ');
+console.log('  /__\\  (_  _)(  _  )/ __)');
+console.log(' /(__)\\  _)(_  )(_)( \\__ \\');
+console.log('(__)(__)(____)(_____)(___/\n');
+
 function log(msg: string): void {
 	_log(`[Boot]: ${msg}`);
 }
@@ -31,6 +38,8 @@ log(chalk.bold('Ai v1.0'));
 
 promiseRetry(retry => {
 	log(`Account fetching... ${chalk.gray(config.host)}`);
+
+	// アカウントをフェッチ
 	return request.post(`${config.apiUrl}/i`, {
 		json: {
 			i: config.i
@@ -44,6 +53,7 @@ promiseRetry(retry => {
 
 	log('Starting AiOS...');
 
+	// 藍起動
 	new 藍(account, [
 		new EmojiModule(),
 		new FortuneModule(),

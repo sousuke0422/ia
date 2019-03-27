@@ -3,7 +3,6 @@ import * as loki from 'lokijs';
 import Module from '../../module';
 import config from '../../config';
 import serifs from '../../serifs';
-import getCollection from '../../utils/get-collection';
 const MeCab = require('mecab-async');
 
 function kanaToHira(str: string) {
@@ -26,27 +25,28 @@ export default class extends Module {
 	public install() {
 		if (!config.keywordEnabled) return {};
 
-		//#region Init DB
-		this.learnedKeywords = getCollection(this.ai.db, '_keyword_learnedKeywords', {
+		this.learnedKeywords = this.ai.getCollection('_keyword_learnedKeywords', {
 			indices: ['userId']
 		});
-		//#endregion
 
 		this.tokenizer = new MeCab();
 		this.tokenizer.command = config.mecab;
 
-		setInterval(this.say, 1000 * 60 * 60);
+		setInterval(this.learn, 1000 * 60 * 60);
 
 		return {};
 	}
 
 	@autobind
-	private async say() {
+	private async learn() {
 		const tl = await this.ai.api('notes/local-timeline', {
 			limit: 30
 		});
 
-		const interestedNotes = tl.filter(note => note.userId !== this.ai.account.id && note.text != null);
+		const interestedNotes = tl.filter(note =>
+			note.userId !== this.ai.account.id &&
+			note.text != null &&
+			note.cw == null);
 
 		let keywords: string[][] = [];
 

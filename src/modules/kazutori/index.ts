@@ -3,8 +3,12 @@ import * as loki from 'lokijs';
 import Module from '../../module';
 import Message from '../../message';
 import serifs from '../../serifs';
-import getCollection from '../../utils/get-collection';
-import { User } from '../../misskey/user';
+
+type User = {
+	id: string;
+	username: string;
+	host: string;
+};
 
 type Game = {
 	votes: {
@@ -23,7 +27,7 @@ export default class extends Module {
 
 	@autobind
 	public install() {
-		this.games = getCollection(this.ai.db, 'kazutori');
+		this.games = this.ai.getCollection('kazutori');
 
 		this.crawleGameEnd();
 		setInterval(this.crawleGameEnd, 1000);
@@ -85,34 +89,53 @@ export default class extends Module {
 
 	@autobind
 	private async contextHook(msg: Message) {
-		if (msg.text == null) return;
+		if (msg.text == null) return {
+			reaction: 'hmm'
+		};
 
 		const game = this.games.findOne({
 			isEnded: false
 		});
 
 		// 既に数字を取っていたら
-		if (game.votes.some(x => x.user.id == msg.userId)) return;
+		if (game.votes.some(x => x.user.id == msg.userId)) return {
+			reaction: 'confused'
+		};
 
 		const match = msg.extractedText.match(/[0-9]+/);
-		if (match == null) return;
+		if (match == null) return {
+			reaction: 'hmm'
+		};
 
 		const num = parseInt(match[0], 10);
 
 		// 整数じゃない
-		if (!Number.isInteger(num)) return;
+		if (!Number.isInteger(num)) return {
+			reaction: 'hmm'
+		};
 
 		// 範囲外
-		if (num < 0 || num > 100) return;
+		if (num < 0 || num > 100) return {
+			reaction: 'confused'
+		};
 
 		this.log(`Voted ${num} by ${msg.user.id}`);
 
+		// 投票
 		game.votes.push({
-			user: msg.user,
+			user: {
+				id: msg.user.id,
+				username: msg.user.username,
+				host: msg.user.host
+			},
 			number: num
 		});
 
 		this.games.update(game);
+
+		return {
+			reaction: 'love'
+		};
 	}
 
 	/**
@@ -186,7 +209,7 @@ export default class extends Module {
 		this.ai.post({
 			text: text,
 			cw: serifs.kazutori.finish,
-			renote: game.postId
+			renoteId: game.postId
 		});
 
 		this.unsubscribeReply(null);

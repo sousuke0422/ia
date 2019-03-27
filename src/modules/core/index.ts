@@ -27,12 +27,15 @@ export default class extends Module {
 		return (
 			this.setName(msg) ||
 			this.greet(msg) ||
+			this.omedeto(msg) ||
 			this.nadenade(msg) ||
 			this.kawaii(msg) ||
 			this.suki(msg) ||
 			this.hug(msg) ||
 			this.humu(msg) ||
 			this.batou(msg) ||
+			this.itai(msg) ||
+			this.ote(msg) ||
 			this.ponkotu(msg) ||
 			this.reaction(msg) ||
 			this.rmrf(msg) ||
@@ -141,14 +144,23 @@ export default class extends Module {
 
 		if (msg.includes(['ただいま'])) {
 			msg.reply(
-				msg.friend.love >= 7
-					? serifs.core.okaeri.love(msg.friend.name)
-					: serifs.core.okaeri.normal(msg.friend.name));
+				msg.friend.love >= 15 ? serifs.core.okaeri.love2(msg.friend.name) :
+				msg.friend.love >= 7 ? getSerif(serifs.core.okaeri.love(msg.friend.name)) :
+				serifs.core.okaeri.normal(msg.friend.name));
 			incLove();
 			return true;
 		}
 
 		return false;
+	}
+
+	@autobind
+	private omedeto(msg: Message): boolean {
+		if (!msg.includes(['おめでと'])) return false;
+
+		msg.reply(serifs.core.omedeto(msg.friend.name));
+
+		return true;
 	}
 
 	@autobind
@@ -193,10 +205,10 @@ export default class extends Module {
 		// メッセージのみ
 		if (!msg.isDm) return true;
 
-		msg.reply(
+		msg.reply(getSerif(
 			msg.friend.love >= 5 ? serifs.core.kawaii.love :
 			msg.friend.love <= -3 ? serifs.core.kawaii.hate :
-			serifs.core.kawaii.normal);
+			serifs.core.kawaii.normal));
 
 		return true;
 	}
@@ -276,6 +288,33 @@ export default class extends Module {
 			msg.friend.love >= 5 ? serifs.core.batou.love :
 			msg.friend.love <= -5 ? serifs.core.batou.hate :
 			serifs.core.batou.normal);
+
+		return true;
+	}
+
+	@autobind
+	private itai(msg: Message): boolean {
+		if (!msg.or(['痛い', 'いたい'])) return false;
+
+		// メッセージのみ
+		if (!msg.isDm) return true;
+
+		msg.reply(serifs.core.itai(msg.friend.name));
+
+		return true;
+	}
+
+	@autobind
+	private ote(msg: Message): boolean {
+		if (!msg.or(['お手'])) return false;
+
+		// メッセージのみ
+		if (!msg.isDm) return true;
+
+		msg.reply(
+			msg.friend.love >= 10 ? serifs.core.ote.love2 :
+			msg.friend.love >= 5 ? serifs.core.ote.love1 :
+			serifs.core.ote.normal);
 
 		return true;
 	}
