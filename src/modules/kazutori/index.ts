@@ -54,7 +54,7 @@ export default class extends Module {
 			}
 
 			// 直近のゲームから時間経ってない場合
-			if (Date.now() - recentGame.startedAt < 1000 * 60 * 5) {
+			if (Date.now() - recentGame.startedAt < 1000 * 60 * 30) {
 				msg.reply(serifs.kazutori.matakondo);
 				return true;
 			}
