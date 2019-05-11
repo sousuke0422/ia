@@ -20,6 +20,7 @@ import ServerModule from './modules/server';
 import VersionModule from './modules/version';
 import FollowModule from './modules/follow';
 import ValentineModule from './modules/valentine';
+import MazeModule from './modules/maze';
 
 import chalk from 'chalk';
 import * as request from 'request-promise-native';
@@ -74,6 +75,7 @@ promiseRetry(retry => {
 		new ValentineModule(),
 		new KeywordModule(),
 		new VersionModule(),
+		new MazeModule(),
 	]);
 }).catch(e => {
 	log(chalk.red('Failed to fetch the account'));
