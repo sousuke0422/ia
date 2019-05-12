@@ -29,7 +29,7 @@ export default class extends Module {
 		this.setData(data);
 
 		this.log('Time to maze');
-		const file = await this.genMazeFile(date);
+		const file = await this.genMazeFile(`${date}-${this.ai.account.id}`);
 
 		this.log('Posting...');
 		this.ai.post({
