@@ -94,6 +94,9 @@ export default class extends Module {
 		} else {
 			const suffixes = ['の売り上げ', 'の消費', 'の生産'];
 
+			const title = type && type !== 'random' ? type
+				: items[Math.floor(Math.random() * items.length)] + suffixes[Math.floor(Math.random() * suffixes.length)];
+
 			const limit = 30;
 			const diffRange = 150;
 			const datasetCount = 1 + Math.floor(Math.random() * 3);
@@ -114,7 +117,7 @@ export default class extends Module {
 			}
 
 			chart = {
-				title: items[Math.floor(Math.random() * items.length)] + suffixes[Math.floor(Math.random() * suffixes.length)],
+				title,
 				datasets: datasets
 			};
 		}
@@ -142,6 +145,10 @@ export default class extends Module {
 		let type = 'random';
 		if (msg.includes(['フォロワー'])) type = 'followers';
 		if (msg.includes(['投稿'])) type = 'userNotes';
+
+		console.log(msg.text);
+		const m = msg.text.match(/(\S{1,20})チャート/);
+		if (m) type = m[1];
 
 		const file = await this.genChart(type, {
 			user: msg.user
