@@ -57,11 +57,7 @@ export default class extends Module {
 			chart = {
 				title: `@${params.user.username}さんの投稿数`,
 				datasets: [{
-					data: data.diffs.normal
-				}, {
-					data: data.diffs.reply
-				}, {
-					data: data.diffs.renote
+					data: data.inc
 				}]
 			};
 		} else if (type === 'followers') {
@@ -87,11 +83,7 @@ export default class extends Module {
 
 			chart = {
 				datasets: [{
-					data: data.local.diffs.normal
-				}, {
-					data: data.local.diffs.reply
-				}, {
-					data: data.local.diffs.renote
+					data: data.local.inc
 				}]
 			};
 		} else {
