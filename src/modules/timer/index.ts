@@ -41,7 +41,7 @@ export default class extends Module {
 			return true;
 		}
 
-		const pre = time ==  300 * 1000 && /カレーメシ/.test(msg.text) ? 'カレーメシ私にも食べさせてください' : '';
+		const pre = time == 300 * 1000 && /カレーメシ/.test(msg.text) ? 'カレーメシ私にも食べさせてください' : '';
 
 		msg.reply(pre + serifs.timer.set);
 
