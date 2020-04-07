@@ -24,7 +24,7 @@ import MazeModule from './modules/maze';
 import ChartModule from './modules/chart';
 
 import * as chalk from 'chalk';
-import * as request from 'request-promise-native';
+import fetch from 'node-fetch';
 const promiseRetry = require('promise-retry');
 
 console.log('   __    ____  _____  ___ ');
@@ -42,16 +42,25 @@ promiseRetry(retry => {
 	log(`Account fetching... ${chalk.gray(config.host)}`);
 
 	// アカウントをフェッチ
-	return request.post({
-		url: `${config.apiUrl}/i`, 
-		forever: true,
-		timeout: 30 * 1000,
-		json: {
+	return fetch(`${config.apiUrl}/i`, {
+		method: 'post',
+		body: JSON.stringify({
 			i: config.i
+		}),
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		timeout: 30 * 1000,
+	}).then(res => {
+		if (!res.ok) {
+			throw `${res.status} ${res.statusText}`;
+		} else {
+			return res.json();
 		}
 	}).catch(retry);
 }, {
-	retries: 3
+	retries: 10,
+	minTimeout: 10000,
 }).then(account => {
 	const acct = `@${account.username}`;
 	log(chalk.green(`Account fetched successfully: ${chalk.underline(acct)}`));
