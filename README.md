@@ -20,7 +20,7 @@ Misskey用の日本語Botです。
 	"mecab": "MeCab のインストールパス (ソースからインストールした場合、大体は /usr/local/bin/mecab)"
 }
 ```
-`npm install` して `npm run build` して `npm start` すれば起動できます
+`yarn install` して `yarn build` して `yarn start` すれば起動できます
 
 ## フォント
 一部の機能にはフォントが必要です。藍にはフォントは同梱されていないので、ご自身でフォントをインストールディレクトリに`font.ttf`という名前で設置してください。
