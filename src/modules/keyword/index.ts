@@ -51,14 +51,11 @@ export default class extends Module {
 
 		let keywords: string[][] = [];
 
-		await Promise.all(interestedNotes.map(note => new Promise((res, rej) => {
-			this.tokenizer.parse(note.text, (err, tokens) => {
-				if (err) return rej(err);
-				const keywordsInThisNote = tokens.filter(token => token[2] == '固有名詞' && token[8] != null);
-				keywords = keywords.concat(keywordsInThisNote);
-				res();
-			});
-		})));
+		for (const note of interestedNotes) {
+			const tokens = await promisify(this.tokenizer.parse).bind(this.tokenizer)(note.text);
+			const keywordsInThisNote = tokens.filter(token => token[2] == '固有名詞' && token[8] != null);
+			keywords = keywords.concat(keywordsInThisNote);
+		}
 
 		if (keywords.length === 0) return;
 
