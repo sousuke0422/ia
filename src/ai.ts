@@ -119,11 +119,7 @@ export default class 藍 {
 
 		setInterval(() => {
 			this.log('Test API request to stream');
-			try {
-				this.connection.api('meta');
-			} catch (e) {
-				this.log(e);
-			}
+			this.connection.api('meta')
 		}, 10 * 60 * 1000);
 
 		//#region Main stream
