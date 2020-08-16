@@ -157,7 +157,7 @@ export default class Stream extends EventEmitter {
 		};
 
 		// とりあえずバッファリングしない
-
+		if (this.state !== 'connected') throw `state is ${this.state}`;
 		this.stream.send(JSON.stringify(d));
 	}
 
