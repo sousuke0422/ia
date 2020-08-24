@@ -54,9 +54,10 @@ export default class extends Module {
 			let reaction = emojis[0];
 
 			switch (reaction) {
-				case '✊': reaction = '🖐'; break;
-				case '✌': reaction = '✊'; break;
-				case '🖐': reaction = '✌'; break;
+				case '✊': reaction = '🤟'; break;
+				case '✌': reaction = '🤞'; break;
+				case '🖐': reaction = '🖖'; break;
+				case '✋': reaction = '🖖'; break;
 			}
 
 			return react(reaction);
