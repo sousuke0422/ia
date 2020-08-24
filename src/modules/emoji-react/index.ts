@@ -21,7 +21,6 @@ export default class extends Module {
 
 	@autobind
 	private async onNote(note: Note) {
-		console.log(`Note: ${JSON.stringify(note)}`);
 		if (note.reply != null) return;
 		if (note.text == null) return;
 		if (note.text.includes('@')) return; // (自分または他人問わず)メンションっぽかったらreject
