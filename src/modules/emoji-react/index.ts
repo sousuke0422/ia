@@ -1,5 +1,5 @@
 import autobind from 'autobind-decorator';
-const emojiRegex = require('emoji-regex');
+const emojiRegex = require('emoji-regex/text');
 
 import { Note } from '../../misskey/note';
 import Module from '../../module';
