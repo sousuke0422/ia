@@ -45,7 +45,7 @@ export default class extends Module {
 		}
 
 		const emojis = parse(note.text).map(x => x.text);
-		if (emojis) {
+		if (emojis.length > 0) {
 			// 絵文字が複数種類ある場合はキャンセル
 			if (!emojis.every((val, i, arr) => val === arr[0])) return;
 
