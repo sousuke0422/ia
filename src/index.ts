@@ -23,6 +23,7 @@ import FollowModule from './modules/follow';
 import ValentineModule from './modules/valentine';
 import MazeModule from './modules/maze';
 import ChartModule from './modules/chart';
+import SleepReportModule from './modules/sleep-report';
 
 import * as chalk from 'chalk';
 import fetch from 'node-fetch';
@@ -89,6 +90,7 @@ promiseRetry(retry => {
 		new VersionModule(),
 		new MazeModule(),
 		new ChartModule(),
+		new SleepReportModule(),
 	]);
 }).catch(e => {
 	log(chalk.red('Failed to fetch the account'));

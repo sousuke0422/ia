@@ -31,6 +31,10 @@ export type InstallerResult = {
 	timeoutCallback?: TimeoutCallback;
 };
 
+export type Meta = {
+	lastWakingAt: number;
+};
+
 /**
  * 藍
  */
@@ -42,6 +46,9 @@ export default class 藍 {
 	private contextHooks: { [moduleName: string]: ContextHook } = {};
 	private timeoutCallbacks: { [moduleName: string]: TimeoutCallback } = {};
 	public db: loki;
+	public lastSleepedAt: number;
+
+	private meta: loki.Collection<Meta>;
 
 	private contexts: loki.Collection<{
 		isDm: boolean;
@@ -97,6 +104,8 @@ export default class 藍 {
 	@autobind
 	private run() {
 		//#region Init DB
+		this.meta = this.getCollection('meta', {});
+
 		this.contexts = this.getCollection('contexts', {
 			indices: ['key']
 		});
@@ -113,6 +122,9 @@ export default class 藍 {
 			indices: ['module']
 		});
 		//#endregion
+
+		const meta = this.getMeta();
+		this.lastSleepedAt = meta.lastWakingAt;
 
 		// Init stream
 		this.connection = new Stream();
@@ -178,6 +190,8 @@ export default class 藍 {
 		// タイマー監視
 		this.crawleTimer();
 		setInterval(this.crawleTimer, 1000);
+
+		setInterval(this.logWaking, 10000);
 
 		this.log(chalk.green.bold('Ai am now running!'));
 	}
@@ -262,6 +276,13 @@ export default class 藍 {
 				this.timeoutCallbacks[timer.module](timer.data);
 			}
 		}
+	}
+
+	@autobind
+	private logWaking() {
+		this.setMeta({
+			lastWakingAt: Date.now(),
+		});
 	}
 
 	/**
@@ -418,5 +439,32 @@ export default class 藍 {
 		});
 
 		this.log(`Timer persisted: ${module.name} ${id} ${delay}ms`);
+	}
+
+	@autobind
+	public getMeta() {
+		const rec = this.meta.findOne();
+
+		if (rec) {
+			return rec;
+		} else {
+			const initial: Meta = {
+				lastWakingAt: Date.now(),
+			};
+
+			this.meta.insertOne(initial);
+			return initial;
+		}
+	}
+
+	@autobind
+	public setMeta(meta: Partial<Meta>) {
+		const rec = this.getMeta();
+
+		for (const [k, v] of Object.entries(meta)) {
+			rec[k] = v;
+		}
+
+		this.meta.update(rec);
 	}
 }
