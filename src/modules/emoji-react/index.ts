@@ -34,7 +34,7 @@ export default class extends Module {
 			}, 1000);
 		};
 
-		const customEmojis = note.text.match(/:([^\n:]+?):/g);
+		const customEmojis = note.text.match(/:([\w@.-]+):(?!\w)/g);
 		if (customEmojis) {
 			// カスタム絵文字が複数種類ある場合はキャンセル
 			if (!customEmojis.every((val, i, arr) => val === arr[0])) return;
