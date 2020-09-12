@@ -208,7 +208,7 @@ class Session {
 				this.think();
 			} catch (e) {
 				console.log('think error', e);
-				process.send({ type: 'surrendered' });
+				process.send!({ type: 'surrendered' });
 				process.exit();
 			}
 		}
@@ -269,7 +269,7 @@ class Session {
 				this.think();
 			} catch (e) {
 				console.log('think error', e);
-				process.send({ type: 'surrendered' });
+				process.send!({ type: 'surrendered' });
 				process.exit();
 			}
 		}
@@ -351,7 +351,7 @@ class Session {
 		console.timeEnd('think');
 
 		setTimeout(() => {
-			process.send({
+			process.send!({
 				type: 'put',
 				pos
 			});

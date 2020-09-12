@@ -91,7 +91,7 @@ export default class extends Module {
 			isEnded: false
 		});
 
-		game.votes.push({
+		game!.votes.push({
 			user: this.ai.account,
 			number: Math.floor(Math.random() * 5) + 1 + 95
 		});
