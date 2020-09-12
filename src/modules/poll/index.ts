@@ -4,12 +4,24 @@ import Module from '../../module';
 import serifs from '../../serifs';
 import { genItem } from '../../vocabulary';
 import config from '../../config';
+import * as loki from 'lokijs';
 
 export default class extends Module {
 	public readonly name = 'poll';
 
+	private learnedKeywords?: loki.Collection<{
+		keyword: string;
+		learnedAt: number;
+	}>;
+
 	@autobind
 	public install() {
+		if (config.keywordEnabled) {
+			this.learnedKeywords = this.ai.getCollection('_keyword_learnedKeywords', {
+				indices: ['userId']
+			});
+		}
+
 		setInterval(() => {
 			if (Math.random() < 0.1) {
 				this.post();
@@ -36,14 +48,25 @@ export default class extends Module {
 
 		const poll = polls[Math.floor(Math.random() * polls.length)];
 
+		const getKeyword = () => {
+			if (!this.learnedKeywords) return 'err';
+
+			const count = this.learnedKeywords.count();
+			const offset = Math.floor(Math.random() * count);
+	
+			const x = this.learnedKeywords.chain().find().offset(offset).limit(1).data();
+			const keyword = x[0].keyword;
+			return keyword;
+		};
+
 		const note = await this.ai.post({
 			text: poll[1],
 			poll: {
 				choices: [
-					genItem(),
-					genItem(),
-					genItem(),
-					genItem(),
+					genItem(undefined, this.learnedKeywords ? getKeyword : undefined),
+					genItem(undefined, this.learnedKeywords ? getKeyword : undefined),
+					genItem(undefined, this.learnedKeywords ? getKeyword : undefined),
+					genItem(undefined, this.learnedKeywords ? getKeyword : undefined),
 				],
 				expiredAfter: duration,
 				multiple: false,
