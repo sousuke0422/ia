@@ -25,8 +25,7 @@ export default class extends Module {
 			this.transferBegin(msg) ||
 			this.transferEnd(msg) ||
 			this.setName(msg) ||
-			this.modules(msg) ||
-			this.version(msg)
+			this.modules(msg)
 		);
 	}
 
