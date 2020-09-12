@@ -46,11 +46,11 @@ export default class extends Module {
 	@autobind
 	private async mentionHook(msg: Message) {
 		if (msg.includes(['占', 'うらな', '運勢', 'おみくじ'])) {
-			const getKeyword = () => {
+			const getKeyword = (rng: () => number) => {
 				if (!this.learnedKeywords) return null;
 	
 				const count = this.learnedKeywords.count();
-				const offset = Math.floor(Math.random() * count);
+				const offset = Math.floor(rng() * count);
 		
 				const x = this.learnedKeywords.chain().find().offset(offset).limit(1).data();
 				const keyword = x[0]?.keyword || null;

@@ -253,7 +253,7 @@ export const and = [
 	'のそばにある',
 ];
 
-export function genItem(seedOrRng?: (() => number) | string | number, getKeyword?: () => string | null) {
+export function genItem(seedOrRng?: (() => number) | string | number, getKeyword?: (rng: () => number) => string | null) {
 	const rng = seedOrRng
 		? typeof seedOrRng === 'function'
 			? seedOrRng
@@ -262,11 +262,11 @@ export function genItem(seedOrRng?: (() => number) | string | number, getKeyword
 
 	let item = '';
 	if (Math.floor(rng() * 5) !== 0) item += itemPrefixes[Math.floor(rng() * itemPrefixes.length)];
-	item += ((getKeyword ? getKeyword() : null) || items[Math.floor(rng() * items.length)]);
+	item += ((getKeyword ? getKeyword(rng) : null) || items[Math.floor(rng() * items.length)]);
 	if (Math.floor(rng() * 3) === 0) {
 		item += and[Math.floor(rng() * and.length)];
 		if (Math.floor(rng() * 5) !== 0) item += itemPrefixes[Math.floor(rng() * itemPrefixes.length)];
-		item += ((getKeyword ? getKeyword() : null) || items[Math.floor(rng() * items.length)]);
+		item += ((getKeyword ? getKeyword(rng) : null) || items[Math.floor(rng() * items.length)]);
 	}
 	return item;
 }
