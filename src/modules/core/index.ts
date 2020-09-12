@@ -2,10 +2,9 @@ import autobind from 'autobind-decorator';
 import Module from '../../module';
 import Message from '../../message';
 import serifs from '../../serifs';
+import { safeForInterpolate } from '../../utils/safe-for-interpolate';
 
 const titles = ['さん', 'くん', '君', 'ちゃん', '様', '先生'];
-
-const invalidChars = ['@', '#', '*', ':', '(', '[', ' ', '　'];
 
 export default class extends Module {
 	public readonly name = 'core';
@@ -26,7 +25,8 @@ export default class extends Module {
 			this.transferBegin(msg) ||
 			this.transferEnd(msg) ||
 			this.setName(msg) ||
-			this.modules(msg)
+			this.modules(msg) ||
+			this.version(msg)
 		);
 	}
 
@@ -80,14 +80,14 @@ export default class extends Module {
 			return true;
 		}
 
-		const name = msg.text.match(/^(.+?)って呼んで/)[1];
+		const name = msg.text.match(/^(.+?)って呼んで/)![1];
 
 		if (name.length > 10) {
 			msg.reply(serifs.core.tooLong);
 			return true;
 		}
 
-		if (invalidChars.some(c => name.includes(c))) {
+		if (!safeForInterpolate(name)) {
 			msg.reply(serifs.core.invalidName);
 			return true;
 		}
@@ -121,7 +121,21 @@ export default class extends Module {
 
 		text += '```';
 
-		msg.reply(text);
+		msg.reply(text, {
+			immediate: true
+		});
+
+		return true;
+	}
+
+	@autobind
+	private version(msg: Message): boolean  {
+		if (!msg.text) return false;
+		if (!msg.or(['v', 'version', 'バージョン'])) return false;
+
+		msg.reply(`\`\`\`\nv${this.ai.version}\n\`\`\``, {
+			immediate: true
+		});
 
 		return true;
 	}

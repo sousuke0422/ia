@@ -3,6 +3,7 @@
 import 藍 from './ai';
 import config from './config';
 import _log from './utils/log';
+const pkg = require('../package.json');
 
 import CoreModule from './modules/core';
 import TalkModule from './modules/talk';
@@ -26,6 +27,7 @@ import MazeModule from './modules/maze';
 import ChartModule from './modules/chart';
 import SleepReportModule from './modules/sleep-report';
 import NotingModule from './modules/noting';
+import PollModule from './modules/poll';
 
 import * as chalk from 'chalk';
 import fetch from 'node-fetch';
@@ -40,7 +42,7 @@ function log(msg: string): void {
 	_log(`[Boot]: ${msg}`);
 }
 
-log(chalk.bold('Ai v1.0'));
+log(chalk.bold(`Ai v${pkg._v}`));
 
 promiseRetry(retry => {
 	log(`Account fetching... ${chalk.gray(config.host)}`);
@@ -95,6 +97,7 @@ promiseRetry(retry => {
 		new ChartModule(),
 		new SleepReportModule(),
 		new NotingModule(),
+		new PollModule(),
 	]);
 }).catch(e => {
 	log(chalk.red('Failed to fetch the account'));

@@ -16,13 +16,14 @@ import Friend, { FriendDoc } from './friend';
 import { User } from './misskey/user';
 import Stream from './stream';
 import log from './utils/log';
+const pkg = require('../package.json');
 
 type MentionHook = (msg: Message) => Promise<boolean | HandlerResult>;
 type ContextHook = (msg: Message, data?: any) => Promise<void | HandlerResult>;
 type TimeoutCallback = (data?: any) => void;
 
 export type HandlerResult = {
-	reaction: string;
+	reaction: string | null;
 };
 
 export type InstallerResult = {
@@ -39,6 +40,7 @@ export type Meta = {
  * 藍
  */
 export default class 藍 {
+	public readonly version = pkg._v;
 	public account: User;
 	public connection: Stream;
 	public modules: Module[] = [];
@@ -55,7 +57,7 @@ export default class 藍 {
 		noteId?: string;
 		userId?: string;
 		module: string;
-		key: string;
+		key: string | null;
 		data?: any;
 	}>;
 
@@ -221,7 +223,7 @@ export default class 藍 {
 			noteId: msg.replyId
 		});
 
-		let reaction = 'love';
+		let reaction: string | null = 'love';
 
 		//#region
 		// コンテキストがあればコンテキストフック呼び出し
@@ -234,7 +236,7 @@ export default class 藍 {
 				reaction = res.reaction;
 			}
 		} else {
-			let res: boolean | HandlerResult;
+			let res: boolean | HandlerResult | null = null;
 
 			for (const handler of this.mentionHooks) {
 				res = await handler(msg);
@@ -302,7 +304,7 @@ export default class 藍 {
 	}
 
 	@autobind
-	public lookupFriend(userId: User['id']): Friend {
+	public lookupFriend(userId: User['id']): Friend | null {
 		const doc = this.friends.findOne({
 			userId: userId
 		});
@@ -391,7 +393,7 @@ export default class 藍 {
 	 * @param data コンテキストに保存するオプションのデータ
 	 */
 	@autobind
-	public subscribeReply(module: Module, key: string, isDm: boolean, id: string, data?: any) {
+	public subscribeReply(module: Module, key: string | null, isDm: boolean, id: string, data?: any) {
 		this.contexts.insertOne(isDm ? {
 			isDm: true,
 			userId: id,
@@ -413,7 +415,7 @@ export default class 藍 {
 	 * @param key コンテキストを識別するためのキー
 	 */
 	@autobind
-	public unsubscribeReply(module: Module, key: string) {
+	public unsubscribeReply(module: Module, key: string | null) {
 		this.contexts.findAndRemove({
 			key: key,
 			module: module.name

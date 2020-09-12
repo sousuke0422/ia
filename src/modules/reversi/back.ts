@@ -219,7 +219,7 @@ class Session {
 	 */
 	private onEnded = async (msg: any) =>  {
 		// ストリームから切断
-		process.send({
+		process.send!({
 			type: 'ended'
 		});
 
