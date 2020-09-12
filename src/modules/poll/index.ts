@@ -49,13 +49,13 @@ export default class extends Module {
 		const poll = polls[Math.floor(Math.random() * polls.length)];
 
 		const getKeyword = () => {
-			if (!this.learnedKeywords) return 'err';
+			if (!this.learnedKeywords) return null;
 
 			const count = this.learnedKeywords.count();
 			const offset = Math.floor(Math.random() * count);
 	
 			const x = this.learnedKeywords.chain().find().offset(offset).limit(1).data();
-			const keyword = x[0].keyword;
+			const keyword = x[0]?.keyword || null;
 			return keyword;
 		};
 
@@ -63,10 +63,10 @@ export default class extends Module {
 			text: poll[1],
 			poll: {
 				choices: [
-					genItem(undefined, this.learnedKeywords ? getKeyword : undefined),
-					genItem(undefined, this.learnedKeywords ? getKeyword : undefined),
-					genItem(undefined, this.learnedKeywords ? getKeyword : undefined),
-					genItem(undefined, this.learnedKeywords ? getKeyword : undefined),
+					genItem(undefined, getKeyword),
+					genItem(undefined, getKeyword),
+					genItem(undefined, getKeyword),
+					genItem(undefined, getKeyword),
 				],
 				expiredAfter: duration,
 				multiple: false,
