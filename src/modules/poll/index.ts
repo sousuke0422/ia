@@ -67,6 +67,7 @@ export default class extends Module {
 					genItem(undefined, getKeyword),
 					genItem(undefined, getKeyword),
 					genItem(undefined, getKeyword),
+					genItem(undefined, getKeyword),
 				],
 				expiredAfter: duration,
 				multiple: false,
