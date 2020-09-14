@@ -5,6 +5,7 @@ import serifs from '../../serifs';
 import { genItem } from '../../vocabulary';
 import config from '../../config';
 import * as loki from 'lokijs';
+import { Note } from '../../misskey/note';
 
 export default class extends Module {
 	public readonly name = 'poll';
@@ -39,11 +40,40 @@ export default class extends Module {
 		const duration = 1000 * 60 * 30;
 
 		const polls = [ // TODO: Extract serif
-			['いちばん珍しそうなもの', 'みなさんは、どれがいちばん珍しいと思いますか？ ヽ(・∀・)'],
-			['いちばん美味しそうなもの', 'みなさんは、どれがいちばん美味しいと思いますか？ ヽ(・∀・)'],
-			['いちばん重そうなもの', 'みなさんは、どれがいちばん重いと思いますか？ ヽ(・∀・)'],
-			['いちばん欲しいもの', 'みなさんは、どれがいちばん欲しいですか？ ヽ(・∀・)'],
-			['無人島に持っていきたいもの', 'みなさんは、無人島にひとつ持っていけるとしたらどれにしますか？ ヽ(・∀・)'],
+			['珍しそうなもの', 'みなさんは、どれがいちばん珍しいと思いますか？'],
+			['美味しそうなもの', 'みなさんは、どれがいちばん美味しいと思いますか？'],
+			['重そうなもの', 'みなさんは、どれがいちばん重いと思いますか？'],
+			['欲しいもの', 'みなさんは、どれがいちばん欲しいですか？'],
+			['無人島に持っていきたいもの', 'みなさんは、無人島にひとつ持っていけるとしたらどれにしますか？'],
+			['家に飾りたいもの', 'みなさんは、家に飾るとしたらどれにしますか？'],
+			['売れそうなもの', 'みなさんは、どれがいちばん売れそうだと思いますか？'],
+			['降ってきてほしいもの', 'みなさんは、どれが空から降ってきてほしいですか？'],
+			['携帯したいもの', 'みなさんは、どれを携帯したいですか？'],
+			['商品化したいもの', 'みなさんは、商品化するとしたらどれにしますか？'],
+			['発掘されそうなもの', 'みなさんは、遺跡から発掘されそうなものはどれだと思いますか？'],
+			['良い香りがしそうなもの', 'みなさんは、どれがいちばんいい香りがすると思いますか？'],
+			['高値で取引されそうなもの', 'みなさんは、どれがいちばん高値で取引されると思いますか？'],
+			['地球周回軌道上にありそうなもの', 'みなさんは、どれが地球周回軌道上を漂っていそうだと思いますか？'],
+			['プレゼントしたいもの', 'みなさんは、私にプレゼントしてくれるとしたらどれにしますか？'],
+			['プレゼントされたいもの', 'みなさんは、プレゼントでもらうとしたらどれにしますか？'],
+			['私が持ってそうなもの', 'みなさんは、私が持ってそうなものはどれだと思いますか？'],
+			['流行りそうなもの', 'みなさんは、どれが流行りそうだと思いますか？'],
+			['朝ごはん', 'みなさんは、朝ごはんにどれが食べたいですか？'],
+			['お昼ごはん', 'みなさんは、お昼ごはんにどれが食べたいですか？'],
+			['お夕飯', 'みなさんは、お夕飯にどれが食べたいですか？'],
+			['体に良さそうなもの', 'みなさんは、どれが体に良さそうだと思いますか？'],
+			['後世に遺したいもの', 'みなさんは、どれを後世に遺したいですか？'],
+			['楽器になりそうなもの', 'みなさんは、どれが楽器になりそうだと思いますか？'],
+			['お味噌汁の具にしたいもの', 'みなさんは、お味噌汁の具にするとしたらどれがいいですか？'],
+			['ふりかけにしたいもの', 'みなさんは、どれをごはんにふりかけたいですか？'],
+			['よく見かけるもの', 'みなさんは、どれをよく見かけますか？'],
+			['道に落ちてそうなもの', 'みなさんは、道端に落ちてそうなものはどれだと思いますか？'],
+			['美術館に置いてそうなもの', 'みなさんは、この中で美術館に置いてありそうなものはどれだと思いますか？'],
+			['教室にありそうなもの', 'みなさんは、教室にありそうなものってどれだと思いますか？'],
+			['絵文字になってほしいもの', '絵文字になってほしいものはどれですか？'],
+			['Misskey本部にありそうなもの', 'みなさんは、Misskey本部にありそうなものはどれだと思いますか？'],
+			['燃えるゴミ', 'みなさんは、どれが燃えるゴミだと思いますか？'],
+			['そして輝くウルトラ', 'そして輝くウルトラ'],
 		];
 
 		const poll = polls[Math.floor(Math.random() * polls.length)];
@@ -59,16 +89,25 @@ export default class extends Module {
 			return keyword;
 		};
 
+		const choices = poll[0] === 'そして輝くウルトラ' ? [
+			'そう',
+			'どちらかというとそう',
+			'どちらでもない',
+			'どちらかというとそうではない',
+			'そうではない',
+			'わからない・回答しない',
+		] : [
+			genItem(undefined, getKeyword),
+			genItem(undefined, getKeyword),
+			genItem(undefined, getKeyword),
+			genItem(undefined, getKeyword),
+			genItem(undefined, getKeyword),
+		];
+
 		const note = await this.ai.post({
 			text: poll[1],
 			poll: {
-				choices: [
-					genItem(undefined, getKeyword),
-					genItem(undefined, getKeyword),
-					genItem(undefined, getKeyword),
-					genItem(undefined, getKeyword),
-					genItem(undefined, getKeyword),
-				],
+				choices,
 				expiredAfter: duration,
 				multiple: false,
 			}
@@ -96,9 +135,9 @@ export default class extends Module {
 
 	@autobind
 	private async timeoutCallback({ title, noteId }) {
-		const note = await this.ai.api('notes/show', { noteId });
+		const note: Note = await this.ai.api('notes/show', { noteId });
 
-		const choices = note.poll.choices;
+		const choices = note.poll!.choices;
 
 		let mostVotedChoice;
 
@@ -122,7 +161,7 @@ export default class extends Module {
 		} else {
 			this.ai.post({ // TODO: Extract serif
 				cw: `${title}アンケートの結果発表です！`,
-				text: `結果は「${mostVotedChoice.text}」でした！`,
+				text: `結果は${mostVotedChoice.votes}票を獲得した「${mostVotedChoice.text}」でした！`,
 				renoteId: noteId,
 			});
 		}
