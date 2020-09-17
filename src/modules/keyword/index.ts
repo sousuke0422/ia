@@ -26,6 +26,9 @@ export default class extends Module {
 	public install() {
 		if (!config.keywordEnabled) return {};
 
+		// mecab-async on Windows には OSコマンドインジェクションがある
+		if (process.platform === 'win32') return {};
+
 		this.learnedKeywords = this.ai.getCollection('_keyword_learnedKeywords', {
 			indices: ['userId']
 		});
