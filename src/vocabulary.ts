@@ -257,6 +257,11 @@ export const items = [
 	'火星',
 	'ウラン',
 	'遠心分離機',
+	'undefined',
+	'null',
+	'NaN',
+	'[object Object]',
+	'ゼロ幅スペース',
 ];
 
 export const and = [
