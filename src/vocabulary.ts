@@ -262,6 +262,7 @@ export const items = [
 	'NaN',
 	'[object Object]',
 	'ゼロ幅スペース',
+	'全角スペース',
 ];
 
 export const and = [
